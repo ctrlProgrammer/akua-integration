@@ -26,10 +26,9 @@ type Client struct {
 
 func NewClient() (*Client, error) {
 	vars := map[string]string{
-		"AKUA_API_CLIENT": os.Getenv("AKUA_API_CLIENT"),
-		"AKUA_API_SECRET": os.Getenv("AKUA_API_SECRET"),
-		"AKUA_BASE_URL":   os.Getenv("AKUA_BASE_URL"),
-		"AKUA_AUDIENCE":   os.Getenv("AKUA_AUDIENCE"),
+		"AKUA_CLIENT_ID":     os.Getenv("AKUA_CLIENT_ID"),
+		"AKUA_CLIENT_SECRET": os.Getenv("AKUA_CLIENT_SECRET"),
+		"AKUA_AUDIENCE":      os.Getenv("AKUA_AUDIENCE"),
 	}
 
 	for k, v := range vars {
@@ -40,9 +39,8 @@ func NewClient() (*Client, error) {
 
 	client := &Client{
 		httpClient: &http.Client{},
-		apiClient:  vars["AKUA_API_CLIENT"],
-		apiSecret:  vars["AKUA_API_SECRET"],
-		baseUrl:    vars["AKUA_BASE_URL"],
+		apiClient:  vars["AKUA_CLIENT_ID"],
+		apiSecret:  vars["AKUA_CLIENT_SECRET"],
 		audience:   vars["AKUA_AUDIENCE"],
 	}
 
@@ -73,7 +71,7 @@ func (c *Client) LoadJwtToken() error {
 		return err
 	}
 
-	request, err := http.NewRequest("POST", c.baseUrl+"/oauth/token", bytes.NewBuffer(bodyBytes))
+	request, err := http.NewRequest("POST", c.audience+"/oauth/token", bytes.NewBuffer(bodyBytes))
 
 	if err != nil {
 		return err
@@ -96,7 +94,7 @@ func (c *Client) LoadJwtToken() error {
 	}
 
 	switch response.StatusCode {
-	case http.StatusCreated: // 201
+	case http.StatusCreated, http.StatusOK:
 		// Success, continue parsing token
 		var jwtTokenResponse JwtTokenResponse
 
