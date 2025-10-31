@@ -10,28 +10,25 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockClient struct {
+type MockAkuaService struct {
 	mock.Mock
 }
 
-func NewMockClient() (*MockClient, error) {
-	return &MockClient{}, nil
-}
-
-func Setup() error {
+func Setup() (*MockAkuaService, error) {
 	envPath := filepath.Join("..", "..", "..", ".env")
 	err := godotenv.Load(envPath)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &MockAkuaService{}, nil
 }
 
 // This is a real case test, this will call directly the akua services and try to get the JWT token to initialize the Akua adapter
-func TestConnection(t *testing.T) {
-	err := Setup()
+// This is only for testing the connection purpose this will not be included in the isolated tests
+func Test_Connection_Real(t *testing.T) {
+	_, err := Setup()
 
 	if err != nil {
 		t.Fatal(err.Error())
@@ -45,17 +42,22 @@ func TestConnection(t *testing.T) {
 
 	defer akuaClient.httpClient.CloseIdleConnections()
 
+	err = akuaClient.LoadJwtToken()
+
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
 	assert.NotNil(t, akuaClient.jwtToken)
 }
 
 // The next ones are only test cases for the Akua adapter, I will use mocks to do it
-
-// 1. Test env variables loading
-func TestEnvVariablesLoading(t *testing.T) {
-	err := Setup()
+// Test env variables loading
+func Test_EnvVariablesLoading_Real(t *testing.T) {
+	_, err := Setup()
 
 	if err != nil {
-		t.Fatalf("Failed to setup environment: %v", err)
+		t.Fatal(err.Error())
 	}
 
 	vars := map[string]string{
@@ -69,4 +71,6 @@ func TestEnvVariablesLoading(t *testing.T) {
 			assert.NotNil(t, v)
 		}
 	}
+
+	assert.Nil(t, err)
 }

@@ -44,12 +44,6 @@ func NewClient() (*Client, error) {
 		audience:   vars["AKUA_AUDIENCE"],
 	}
 
-	err := client.LoadJwtToken()
-
-	if err != nil {
-		return nil, err
-	}
-
 	return client, nil
 }
 
