@@ -1,4 +1,4 @@
-package internal_adapters_akua
+package adapters_akua
 
 import (
 	"bytes"
@@ -16,19 +16,20 @@ type JwtTokenResponse struct {
 }
 
 type Client struct {
-	httpClient *http.Client
-	apiClient  string
-	apiSecret  string
-	jwtToken   string
-	baseUrl    string
-	audience   string
+	httpClient     *http.Client
+	apiClient      string
+	apiSecret      string
+	jwtToken       string
+	audience       string
+	organizationId string
 }
 
 func NewClient() (*Client, error) {
 	vars := map[string]string{
-		"AKUA_CLIENT_ID":     os.Getenv("AKUA_CLIENT_ID"),
-		"AKUA_CLIENT_SECRET": os.Getenv("AKUA_CLIENT_SECRET"),
-		"AKUA_AUDIENCE":      os.Getenv("AKUA_AUDIENCE"),
+		"AKUA_CLIENT_ID":       os.Getenv("AKUA_CLIENT_ID"),
+		"AKUA_CLIENT_SECRET":   os.Getenv("AKUA_CLIENT_SECRET"),
+		"AKUA_AUDIENCE":        os.Getenv("AKUA_AUDIENCE"),
+		"AKUA_ORGANIZATION_ID": os.Getenv("AKUA_ORGANIZATION_ID"),
 	}
 
 	for k, v := range vars {
@@ -38,10 +39,11 @@ func NewClient() (*Client, error) {
 	}
 
 	client := &Client{
-		httpClient: &http.Client{},
-		apiClient:  vars["AKUA_CLIENT_ID"],
-		apiSecret:  vars["AKUA_CLIENT_SECRET"],
-		audience:   vars["AKUA_AUDIENCE"],
+		httpClient:     &http.Client{},
+		apiClient:      vars["AKUA_CLIENT_ID"],
+		apiSecret:      vars["AKUA_CLIENT_SECRET"],
+		audience:       vars["AKUA_AUDIENCE"],
+		organizationId: vars["AKUA_ORGANIZATION_ID"],
 	}
 
 	return client, nil
@@ -108,4 +110,24 @@ func (c *Client) LoadJwtToken() error {
 	default:
 		return fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
 	}
+}
+
+func (c *Client) GetJwtToken() string {
+	return c.jwtToken
+}
+
+func (c *Client) GetAudience() string {
+	return c.audience
+}
+
+func (c *Client) GetHttpClient() *http.Client {
+	return c.httpClient
+}
+
+func (c *Client) GetOrganizationId() string {
+	return c.organizationId
+}
+
+func (c *Client) JwtIsValid() bool {
+	return c.jwtToken != ""
 }

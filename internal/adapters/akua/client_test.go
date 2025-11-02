@@ -1,4 +1,4 @@
-package internal_adapters_akua
+package adapters_akua
 
 import (
 	"os"
