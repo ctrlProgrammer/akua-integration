@@ -1,0 +1,64 @@
+@startuml Commerce Integration Error Cases
+
+title Akua API Integration - Error Cases Flow
+
+skinparam activity {
+    BackgroundColor<<error>> #FFE6E6
+    BackgroundColor<<success>> #E6F3E6
+    BackgroundColor<<validation>> #FFF9E6
+}
+
+|#LightBlue|GetOrganizationCommerces Flow|
+start
+:Validate JWT Token;
+
+if (JWT Token Valid?) then (no)
+    #FFE6E6:Return Error:\nErrJWTTokenNotSet;
+    stop
+else (yes)
+endif
+
+:Create HTTP GET Request\n/v1/merchants;
+
+if (Request Creation Failed?) then (yes)
+    #FFE6E6:Return Error:\nHTTP Request Creation Error;
+    stop
+else (no)
+endif
+
+:Set Authorization Header;
+:Set Content-Type Header;
+:Execute HTTP Request;
+
+if (HTTP Request Failed?) then (yes)
+    #FFE6E6:Return Error:\nHTTP Request Error\n(e.g., network failure);
+    stop
+else (no)
+endif
+
+:Read Response Body;
+
+if (Read Body Failed?) then (yes)
+    #FFE6E6:Return Error:\nIO Read Error;
+    stop
+else (no)
+endif
+
+:Check Response Status Code;
+
+if (Status Code == 200?) then (yes)
+    :Unmarshal JSON Response;
+    if (JSON Unmarshal Failed?) then (yes)
+        #FFE6E6:Return Error:\nJSON Unmarshal Error;
+        stop
+    else (no)
+        #E6F3E6:Return Success:\n[]commerce.Commerce;
+        stop
+    endif
+else (no)
+    #FFE6E6:Return Error:\nUnexpected Status Code\n(400, 401, 403, 404, 500, etc.)\nwith error message;
+    stop
+endif
+
+@enduml
+
