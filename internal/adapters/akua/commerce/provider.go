@@ -1,33 +1,30 @@
 package adapters_akua_commerce
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
-	internal_adapters_akua "akua-project/internal/adapters/akua"
-	internal_organization "akua-project/internal/organization"
+	adaters_akua "akua-project/internal/adapters/akua"
+	commerce "akua-project/internal/commerce"
 )
 
-type OrganizationResponse struct {
-	Data []internal_organization.Organization `json:"data"`
+type CommerceProvider struct {
 }
 
-type OrganizationProvider struct {
+func NewCommerceProvider() *CommerceProvider {
+	return &CommerceProvider{}
 }
 
-func NewOrganizationProvider() *OrganizationProvider {
-	return &OrganizationProvider{}
-}
-
-func (p *OrganizationProvider) GetOrganizations(ctx context.Context, client *internal_adapters_akua.Client) ([]internal_organization.Organization, error) {
+func (p *CommerceProvider) GetOrganizationCommerces(ctx context.Context, client *adaters_akua.Client) ([]commerce.Commerce, error) {
 	if !client.JwtIsValid() {
-		return nil, internal_adapters_akua.ErrJWTTokenNotSet
+		return nil, adaters_akua.ErrJWTTokenNotSet
 	}
 
-	request, err := http.NewRequest("GET", client.GetAudience()+"/v1/organizations", nil)
+	request, err := http.NewRequest("GET", client.GetAudience()+"/v1/merchants", nil)
 
 	if err != nil {
 		return nil, err
@@ -52,15 +49,65 @@ func (p *OrganizationProvider) GetOrganizations(ctx context.Context, client *int
 
 	switch response.StatusCode {
 	case http.StatusOK: // 200
-		var organizations OrganizationResponse
+		var commerces GetOrganizationCommercesResponse
 
-		err = json.Unmarshal(bodyBytes, &organizations)
+		err = json.Unmarshal(bodyBytes, &commerces)
 
 		if err != nil {
 			return nil, err
 		}
 
-		return organizations.Data, nil
+		return commerces.Data, nil
+	default: // 400, 500, etc.
+		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
+	}
+}
+
+func (p *CommerceProvider) CreateCommerce(ctx context.Context, client *adaters_akua.Client, requestData CreateCommerceRequest) (*commerce.Commerce, error) {
+	if !client.JwtIsValid() {
+		return nil, adaters_akua.ErrJWTTokenNotSet
+	}
+
+	requestBody, err := json.Marshal(requestData)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("POST", client.GetAudience()+"/v1/merchants", bytes.NewBuffer(requestBody))
+
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Authorization", "Bearer "+client.GetJwtToken())
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := client.GetHttpClient().Do(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	bodyBytes, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch response.StatusCode {
+	case http.StatusCreated: // 201
+		generatedCommerce := &commerce.Commerce{}
+
+		err = json.Unmarshal(bodyBytes, &generatedCommerce)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return generatedCommerce, nil
 	default: // 400, 500, etc.
 		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
 	}

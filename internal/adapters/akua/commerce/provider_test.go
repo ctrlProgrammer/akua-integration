@@ -2,6 +2,7 @@ package adapters_akua_commerce
 
 import (
 	adapters_akua "akua-project/internal/adapters/akua"
+	commerce "akua-project/internal/commerce"
 	"context"
 	"path/filepath"
 	"testing"
@@ -10,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Setup() (*adapters_akua.Client, *OrganizationProvider, error) {
+func Setup() (*adapters_akua.Client, *CommerceProvider, error) {
 	envPath := filepath.Join("..", "..", "..", "..", ".env")
 
 	err := godotenv.Load(envPath)
@@ -31,26 +32,86 @@ func Setup() (*adapters_akua.Client, *OrganizationProvider, error) {
 		return nil, nil, err
 	}
 
-	return akuaClient, NewOrganizationProvider(), nil
+	return akuaClient, NewCommerceProvider(), nil
 }
 
 // Test to get the organizations from the Akua API
 // This test will validate if the organizations are returned correctly
-func Test_GetOrganizations_Success(t *testing.T) {
+func Test_GetOrganizationCommerces_Success(t *testing.T) {
 	akuaClient, provider, err := Setup()
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	organizations, err := provider.GetOrganizations(context.Background(), akuaClient)
+	commerces, err := provider.GetOrganizationCommerces(context.Background(), akuaClient)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotNil(t, organizations)
-	assert.NotEmpty(t, organizations)
-	assert.Equal(t, len(organizations), 1)
-	assert.NotNil(t, organizations[0].ID)
+	assert.NotNil(t, commerces)
+	assert.NotEmpty(t, commerces)
+	assert.Equal(t, len(commerces), 1)
+	assert.NotNil(t, commerces[0].ID)
+}
+
+// OInly execute this test when the organization has no commerces
+func Test_GetOrganizationCommercesEmpty_Success(t *testing.T) {
+	akuaClient, provider, err := Setup()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	commerces, err := provider.GetOrganizationCommerces(context.Background(), akuaClient)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, commerces)
+	assert.Empty(t, commerces)
+}
+
+func Test_CreateCommerce_Success(t *testing.T) {
+	akuaClient, provider, err := Setup()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	request := CreateCommerceRequest{
+		Type:                "ECOMMERCE",
+		Name:                "Test Commerce",
+		OrganizationID:      akuaClient.GetOrganizationId(),
+		SupportedCurrencies: []string{"USD"},
+		DefaultCurrency:     "USD",
+		Website:             "https://test.com",
+		BillingAddress: commerce.Address{
+			Street:  "Test Street",
+			Number:  "123",
+			City:    "Bogotá",
+			State:   "Cundinamarca",
+			ZipCode: "12345",
+			Country: "COL", // Take care with the country code because is a static param based on the Akua country codes
+		},
+		LocationAddress: commerce.Address{
+			Street:  "Test Street",
+			Number:  "123",
+			City:    "Bogotá",
+			State:   "Cundinamarca",
+			ZipCode: "12345",
+			Country: "COL", // Take care with the country code because is a static param based on the Akua country codes
+		},
+	}
+
+	generatedCommerce, err := provider.CreateCommerce(context.Background(), akuaClient, request)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, generatedCommerce)
+	assert.NotNil(t, generatedCommerce.ID)
 }

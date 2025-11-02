@@ -99,26 +99,26 @@ type ContractInformation struct {
 }
 
 type Commerce struct {
-	ID                  string              `json:"id"`
-	OrganizationID      string              `json:"organization_id"`
-	Name                string              `json:"name"`
-	Type                string              `json:"type"`
-	Alias               string              `json:"alias"`
-	BillingAddress      Address             `json:"billing_address"`
-	LocationAddress     Address             `json:"location_address"`
-	Email               string              `json:"email"`
-	Phone               string              `json:"phone"`
-	Status              string              `json:"status"`
-	Activity            string              `json:"activity"`
-	DefaultCurrency     string              `json:"default_currency"`
-	SupportedCurrencies []string            `json:"supported_currencies"`
-	Rails               Rails               `json:"rails"`
-	Website             string              `json:"website"`
-	TaxInformation      TaxInformation      `json:"tax_information"`
-	PayoutInformation   PayoutInformation   `json:"payout_information"`
-	FeeConfiguration    FeeConfiguration    `json:"fee_configuration"`
-	ContractInformation ContractInformation `json:"contract_information"`
-	Notes               string              `json:"notes"`
-	CreatedAt           time.Time           `json:"created_at"`
-	UpdatedAt           time.Time           `json:"updated_at"`
+	ID                  string              `json:"id,omitempty"`
+	OrganizationID      string              `json:"organization_id" validate:"required"`
+	Name                string              `json:"name" validate:"required"`
+	Type                string              `json:"type" validate:"required"`
+	Alias               string              `json:"alias,omitempty"`
+	BillingAddress      Address             `json:"billing_address" validate:"required"`
+	LocationAddress     Address             `json:"location_address" validate:"required"`
+	Email               string              `json:"email,omitempty"`
+	Phone               string              `json:"phone,omitempty"`
+	Status              string              `json:"status,omitempty"`
+	Activity            string              `json:"activity,omitempty"`
+	DefaultCurrency     string              `json:"default_currency" validate:"required"`
+	SupportedCurrencies []string            `json:"supported_currencies" validate:"required"`
+	Rails               Rails               `json:"rails,omitempty"`
+	Website             string              `json:"website,omitempty"`
+	TaxInformation      TaxInformation      `json:"tax_information,omitempty"`
+	PayoutInformation   PayoutInformation   `json:"payout_information,omitempty"`
+	FeeConfiguration    FeeConfiguration    `json:"fee_configuration,omitempty"`
+	ContractInformation ContractInformation `json:"contract_information,omitempty"`
+	Notes               string              `json:"notes,omitempty"`
+	CreatedAt           time.Time           `json:"created_at,omitempty"`
+	UpdatedAt           time.Time           `json:"updated_at,omitempty"`
 }
