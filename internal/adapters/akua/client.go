@@ -22,6 +22,7 @@ type Client struct {
 	jwtToken       string
 	audience       string
 	organizationId string
+	merchantId     string
 }
 
 func NewClient() (*Client, error) {
@@ -30,6 +31,7 @@ func NewClient() (*Client, error) {
 		"AKUA_CLIENT_SECRET":   os.Getenv("AKUA_CLIENT_SECRET"),
 		"AKUA_AUDIENCE":        os.Getenv("AKUA_AUDIENCE"),
 		"AKUA_ORGANIZATION_ID": os.Getenv("AKUA_ORGANIZATION_ID"),
+		"AKUA_COMMERCE_ID":     os.Getenv("AKUA_COMMERCE_ID"),
 	}
 
 	for k, v := range vars {
@@ -44,6 +46,7 @@ func NewClient() (*Client, error) {
 		apiSecret:      vars["AKUA_CLIENT_SECRET"],
 		audience:       vars["AKUA_AUDIENCE"],
 		organizationId: vars["AKUA_ORGANIZATION_ID"],
+		merchantId:     vars["AKUA_COMMERCE_ID"],
 	}
 
 	return client, nil
@@ -126,6 +129,10 @@ func (c *Client) GetHttpClient() *http.Client {
 
 func (c *Client) GetOrganizationId() string {
 	return c.organizationId
+}
+
+func (c *Client) GetMerchantId() string {
+	return c.merchantId
 }
 
 func (c *Client) JwtIsValid() bool {

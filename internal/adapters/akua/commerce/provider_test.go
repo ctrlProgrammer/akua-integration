@@ -4,6 +4,7 @@ import (
 	adapters_akua "akua-project/internal/adapters/akua"
 	commerce "akua-project/internal/commerce"
 	"context"
+	"log"
 	"path/filepath"
 	"testing"
 
@@ -54,24 +55,8 @@ func Test_GetOrganizationCommerces_Success(t *testing.T) {
 	assert.NotEmpty(t, commerces)
 	assert.Equal(t, len(commerces), 1)
 	assert.NotNil(t, commerces[0].ID)
-}
 
-// OInly execute this test when the organization has no commerces
-func Test_GetOrganizationCommercesEmpty_Success(t *testing.T) {
-	akuaClient, provider, err := Setup()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	commerces, err := provider.GetOrganizationCommerces(context.Background(), akuaClient)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.NotNil(t, commerces)
-	assert.Empty(t, commerces)
+	log.Println(commerces)
 }
 
 func Test_CreateCommerce_Success(t *testing.T) {
