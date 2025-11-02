@@ -1,4 +1,4 @@
-package internal_organization
+package organization
 
 import "time"
 
