@@ -5,9 +5,27 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path/filepath"
+	"testing"
+
+	"github.com/joho/godotenv"
 )
 
+func InitializeEnvVariables() error {
+	envPath := filepath.Join("..", "..", "..", ".env")
+
+	err := godotenv.Load(envPath)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func InitializePaymentFlow(ctx context.Context) error {
+	InitializeEnvVariables()
+
 	akuaClient, err := adapters_akua.NewClient()
 
 	if err != nil {
@@ -40,7 +58,20 @@ func InitializePaymentFlow(ctx context.Context) error {
 	return nil
 }
 
-func PaymentFlow(ctx context.Context) error {
+func Test_Authorize_Auto_Capture_Success(t *testing.T) {
+	log.Println("=================================================")
+	log.Println("Testing Authorize with automatic capture...")
+	log.Println("=================================================")
+
+	err := InitializePaymentFlow(context.Background())
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println("=================================================")
+	log.Println("Finish flow initialization...")
+	log.Println("=================================================")
+
 	fmt.Println("Payment Flow")
-	return nil
 }
