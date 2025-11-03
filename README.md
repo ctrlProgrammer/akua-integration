@@ -6,7 +6,6 @@ This directory contains comprehensive payment flow implementations for the Akua 
 
 - [Prerequisites](#prerequisites)
 - [Environment Setup](#environment-setup)
-- [Running Tests](#running-tests)
 - [Flow Documentation](#flow-documentation)
   - [1. Authorization with Auto Capture](#1-authorization-with-auto-capture)
   - [2. Authorization with Manual Capture](#2-authorization-with-manual-capture)
