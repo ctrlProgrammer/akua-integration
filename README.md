@@ -6,12 +6,12 @@ This directory contains comprehensive payment flow implementations for the Akua 
 
 - [Prerequisites](#prerequisites)
 - [Environment Setup](#environment-setup)
+- [Architecture Overview](#architecture-overview)
 - [Flow Documentation](#flow-documentation)
   - [1. Authorization with Auto Capture](#1-authorization-with-auto-capture)
   - [2. Authorization with Manual Capture](#2-authorization-with-manual-capture)
   - [3. Authorization with Manual Reversal](#3-authorization-with-manual-reversal)
   - [4. Authorization with Auto Refund](#4-authorization-with-auto-refund)
-- [Architecture Overview](#architecture-overview)
 
 ## Prerequisites
 
@@ -58,6 +58,79 @@ These credentials are required for:
    go test -v ./internal/flows/authorize_manual_cature
    go test -v ./internal/flows/authorize_manual_reversal
    ```
+
+## Architecture Overview
+
+### Flow Structure
+
+All flows follow a consistent structure:
+
+```
+internal/flows/
+├── authorize_auto_capture/
+│   ├── flow_test.go          # Test implementation
+│   └── flow_diagram.puml     # Sequence diagram
+├── authorize_manual_cature/
+│   ├── flow_test.go
+│   └── flow_diagram.puml
+├── authorize_manual_reversal/
+│   ├── flow_test.go
+│   └── flow_diagram.puml
+└── authorize_auto_refund/
+    ├── flow_test.go
+    └── flow_diagram.puml
+```
+
+### Common Components
+
+All flows utilize:
+
+1. **Akua Client** (`internal/adapters/akua`)
+
+   - HTTP client wrapper
+   - JWT token management
+   - OAuth authentication
+
+2. **Authorization Provider** (`internal/adapters/akua/authorization`)
+
+   - `Authorize()` - Create payment authorization
+   - `Capture()` - Capture an authorized payment
+   - `Reversal()` - Reverse an authorized payment
+   - `Refund()` - Refund a captured payment
+
+3. **Payments Provider** (`internal/adapters/akua/payments`)
+   - `GetPaymentById()` - Retrieve payment details
+   - Payment state verification
+
+## Flow Comparison Matrix
+
+| Flow                | Capture Mode | Initial Status          | Final Action | Final Status | Use Case                     |
+| ------------------- | ------------ | ----------------------- | ------------ | ------------ | ---------------------------- |
+| **Auto Capture**    | `AUTOMATIC`  | `APPROVED`              | N/A          | `APPROVED`   | Immediate payment processing |
+| **Manual Capture**  | `MANUAL`     | `AUTHORIZED`            | Capture      | `CAPTURED`   | Delayed capture scenarios    |
+| **Manual Reversal** | `MANUAL`     | `AUTHORIZED`            | Reversal     | `CANCELLED`  | Cancel before capture        |
+| **Auto Refund**     | `AUTOMATIC`  | `AUTHORIZED`/`CAPTURED` | Refund       | `REFUNDED`   | Return funds after capture   |
+
+---
+
+## Transaction Types Reference
+
+Throughout the flows, you'll encounter these transaction types:
+
+- **AUTHORIZATION** - Initial payment authorization
+- **CAPTURE** - Capture of authorized funds
+- **REVERSAL** - Cancellation of authorization (before capture)
+- **REFUND** - Return of funds (after capture)
+
+---
+
+## Additional Resources
+
+- [Akua API Documentation](https://docs.akua.la) - Official API reference
+- [Integration Architecture](./../adapters/akua/integration_structure.puml) - System architecture diagram
+- [Authorization Cases](./../adapters/akua/authorization/cases.puml) - Error case scenarios
+
+---
 
 ## Flow Documentation
 
@@ -310,79 +383,6 @@ Test_Authorize_AutomaticCapture_Refund_Success
 - Refund requires a captured payment (unlike reversal which requires an authorized but uncaptured payment)
 - Refund returns the captured amount to the customer
 - Multiple refunds may be possible for partial refund scenarios
-
----
-
-## Architecture Overview
-
-### Flow Structure
-
-All flows follow a consistent structure:
-
-```
-internal/flows/
-├── authorize_auto_capture/
-│   ├── flow_test.go          # Test implementation
-│   └── flow_diagram.puml     # Sequence diagram
-├── authorize_manual_cature/
-│   ├── flow_test.go
-│   └── flow_diagram.puml
-├── authorize_manual_reversal/
-│   ├── flow_test.go
-│   └── flow_diagram.puml
-└── authorize_auto_refund/
-    ├── flow_test.go
-    └── flow_diagram.puml
-```
-
-### Common Components
-
-All flows utilize:
-
-1. **Akua Client** (`internal/adapters/akua`)
-
-   - HTTP client wrapper
-   - JWT token management
-   - OAuth authentication
-
-2. **Authorization Provider** (`internal/adapters/akua/authorization`)
-
-   - `Authorize()` - Create payment authorization
-   - `Capture()` - Capture an authorized payment
-   - `Reversal()` - Reverse an authorized payment
-   - `Refund()` - Refund a captured payment
-
-3. **Payments Provider** (`internal/adapters/akua/payments`)
-   - `GetPaymentById()` - Retrieve payment details
-   - Payment state verification
-
-## Flow Comparison Matrix
-
-| Flow                | Capture Mode | Initial Status          | Final Action | Final Status | Use Case                     |
-| ------------------- | ------------ | ----------------------- | ------------ | ------------ | ---------------------------- |
-| **Auto Capture**    | `AUTOMATIC`  | `APPROVED`              | N/A          | `APPROVED`   | Immediate payment processing |
-| **Manual Capture**  | `MANUAL`     | `AUTHORIZED`            | Capture      | `CAPTURED`   | Delayed capture scenarios    |
-| **Manual Reversal** | `MANUAL`     | `AUTHORIZED`            | Reversal     | `CANCELLED`  | Cancel before capture        |
-| **Auto Refund**     | `AUTOMATIC`  | `AUTHORIZED`/`CAPTURED` | Refund       | `REFUNDED`   | Return funds after capture   |
-
----
-
-## Transaction Types Reference
-
-Throughout the flows, you'll encounter these transaction types:
-
-- **AUTHORIZATION** - Initial payment authorization
-- **CAPTURE** - Capture of authorized funds
-- **REVERSAL** - Cancellation of authorization (before capture)
-- **REFUND** - Return of funds (after capture)
-
----
-
-## Additional Resources
-
-- [Akua API Documentation](https://docs.akua.la) - Official API reference
-- [Integration Architecture](./../adapters/akua/integration_structure.puml) - System architecture diagram
-- [Authorization Cases](./../adapters/akua/authorization/cases.puml) - Error case scenarios
 
 ---
 
