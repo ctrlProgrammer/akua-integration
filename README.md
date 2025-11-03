@@ -63,9 +63,7 @@ These credentials are required for:
 
 ### Flow Structure
 
-```markdown
-![Integration Architecture](internal/adapters/akua/integration_structure_simplified.png)
-```
+[Integration Architecture](internal/adapters/akua/integration_structure_simplified.png)
 
 All flows follow a consistent structure:
 
