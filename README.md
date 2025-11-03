@@ -41,11 +41,14 @@ These credentials are required for:
 
 ## How to execute and test a flow
 
-1. Define what will be the executed flow, you can select one of the next ones:
-   a. Authorize automatic capture
-   b. Authorize with manual capture
-   c. Authorize with reversal (This will use manual capture to maintain the transaction state)
-   d. Authorize with refund (This will use automatic capture and when it is captured will execute the refund)
+1. Define which flow you want to execute. You can select one of the following:
+
+   - Authorize automatic capture
+   - Authorize with manual capture
+   - Authorize with reversal
+     - This will use manual capture to maintain the transaction state
+   - Authorize with refund
+     - This will use automatic capture, and when it is captured, will execute the refund
 
    ```
    go test -v ./internal/flows/authorize_auto_capture
