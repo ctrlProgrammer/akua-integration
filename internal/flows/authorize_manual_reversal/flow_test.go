@@ -161,31 +161,23 @@ func Test_Authorize_ManualCapture_Success(t *testing.T) {
 	assert.Equal(t, "AUTHORIZED", payment.Status, "expected payment status to be AUTHORIZED")
 
 	log.Println("=================================================")
-	log.Println("Initializing capture...")
+	log.Println("Initializing reversal...")
 	log.Println("=================================================")
 
-	captureRequest := adapters_akua_authorization.CaptureRequest{
-		ID: authorization.PaymentID,
-	}
-
-	captureResponse, err := authorizationProvider.Capture(context.Background(), akuaClient, captureRequest)
+	reversalResponse, err := authorizationProvider.Reversal(context.Background(), akuaClient, authorization.PaymentID)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	log.Println("=================================================")
-	log.Println("Capture Response:")
-	log.Println("Capture ID: ", captureResponse.PaymentId)
-	log.Println("Capture Status: ", captureResponse.Transaction.Status)
-	log.Println("Capture Amount: ", captureResponse.Transaction.Amount)
+	log.Println("Reversal Response:")
+	log.Println("Reversal ID: ", reversalResponse.PaymentId)
+	log.Println("Reversal Status: ", reversalResponse.Transaction.Status)
+	log.Println("Reversal Amount: ", reversalResponse.Transaction.Amount)
 	log.Println("=================================================")
 
-	log.Println("=================================================")
-	log.Println("Capture requested...")
-	log.Println("=================================================")
-
-	lastPaymentState, err := paymentsProvider.GetPaymentById(context.Background(), akuaClient, captureResponse.PaymentId)
+	lastPaymentState, err := paymentsProvider.GetPaymentById(context.Background(), akuaClient, reversalResponse.PaymentId)
 
 	if err != nil {
 		t.Fatal(err)
@@ -193,7 +185,7 @@ func Test_Authorize_ManualCapture_Success(t *testing.T) {
 
 	log.Println("=================================================")
 	log.Println("Last Payment State:")
-	log.Println("In this case we need to have the capture transaction in the payment transactions including authorization and capture")
+	log.Println("In this case we need to have the reversal transaction in the payment transactions including authorization and reversal")
 	log.Println("Payment ID: ", lastPaymentState.ID)
 	log.Println("Payment Status: ", lastPaymentState.Status)
 	log.Println("Payment Amount: ", lastPaymentState.CurrentAmount)
@@ -211,4 +203,7 @@ func Test_Authorize_ManualCapture_Success(t *testing.T) {
 
 	log.Println("=================================================")
 
+	// Validate if the payment was canceled successfully
+
+	assert.Equal(t, "CANCELLED", lastPaymentState.Status, "expected payment status to be CANCELLED")
 }

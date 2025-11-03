@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -108,9 +107,6 @@ func (p *AuthorizationProvider) Capture(ctx context.Context, client *adaters_aku
 		return nil, err
 	}
 
-	log.Println("Capture Response: ", string(bodyBytes))
-	log.Println("Capture Response Status Code: ", response.StatusCode)
-
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated: // 200, 201
 		var capture CaptureResponse
@@ -158,9 +154,6 @@ func (p *AuthorizationProvider) Reversal(ctx context.Context, client *adaters_ak
 		return nil, err
 	}
 
-	log.Println("Capture Response: ", string(bodyBytes))
-	log.Println("Capture Response Status Code: ", response.StatusCode)
-
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated: // 200, 201
 		var reversal ReversalResponse
@@ -207,9 +200,6 @@ func (p *AuthorizationProvider) Refund(ctx context.Context, client *adaters_akua
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println("Capture Response: ", string(bodyBytes))
-	log.Println("Capture Response Status Code: ", response.StatusCode)
 
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated: // 200, 201

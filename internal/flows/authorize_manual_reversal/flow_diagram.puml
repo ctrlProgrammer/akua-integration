@@ -1,0 +1,239 @@
+@startuml Authorize Manual Reversal Flow
+
+title Authorization Flow - Manual Reversal
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam backgroundColor #FAFAFA
+
+actor "Test Function" as Test
+participant "InitializePaymentFlow" as InitFlow
+participant "akua.Client" as Client
+participant "AuthorizationProvider" as AuthProvider
+participant "PaymentsProvider" as PaymentsProvider
+participant "Akua API" as AkuaAPI
+
+== Phase 1: Initialization ==
+Test -> InitFlow: InitializePaymentFlow(ctx)
+activate InitFlow
+
+InitFlow -> InitFlow: InitializeEnvVariables()\nLoad .env file
+InitFlow -> Client: NewClient()
+activate Client
+Client -> Client: Load environment variables:\n- AKUA_CLIENT_ID\n- AKUA_CLIENT_SECRET\n- AKUA_AUDIENCE\n- AKUA_ORGANIZATION_ID\n- AKUA_COMMERCE_ID
+Client -> Client: Validate all env vars are set
+Client --> InitFlow: *Client (or error)
+deactivate Client
+
+alt Client Creation Failed
+    InitFlow --> Test: Return Error
+    deactivate InitFlow
+    Test --> Test: t.Fatal(err)
+else Client Created Successfully
+    InitFlow -> Client: LoadJwtToken()
+    activate Client
+    
+    Client -> Client: Prepare OAuth request body
+    Client -> AkuaAPI: POST /oauth/token
+    activate AkuaAPI
+    
+    alt JWT Token Request Failed
+        AkuaAPI --> Client: Error Response
+        Client --> InitFlow: Return Error
+        deactivate Client
+        deactivate AkuaAPI
+        InitFlow --> Test: Return Error
+        deactivate InitFlow
+        Test --> Test: t.Fatal(err)
+    else JWT Token Success
+        AkuaAPI --> Client: 201 Created\n{access_token, ...}
+        deactivate AkuaAPI
+        Client -> Client: Store access_token
+        Client --> InitFlow: JWT Token loaded
+        deactivate Client
+    end
+    
+    InitFlow -> InitFlow: NewAuthorizationProvider()
+    InitFlow -> InitFlow: NewPaymentsProvider()
+    InitFlow --> Test: Return (client, authProvider, paymentsProvider, nil)
+    deactivate InitFlow
+end
+
+== Phase 2: Authorization Request ==
+Test -> Test: Prepare AuthorizeRequest:\n- Amount: {Currency: "USD", Value: 100}\n- Intent: "authorization"\n- MerchantId: client.GetMerchantId()\n- Capture.Mode: "MANUAL"\n- Instrument: Card details
+activate Test
+
+Test -> AuthProvider: Authorize(ctx, client, request)
+activate AuthProvider
+
+AuthProvider -> Client: JwtIsValid()
+activate Client
+Client --> AuthProvider: true/false
+deactivate Client
+
+alt JWT Token Invalid
+    AuthProvider --> Test: Error: ErrJWTTokenNotSet
+    deactivate AuthProvider
+    Test --> Test: t.Fatal(err)
+else JWT Token Valid
+    AuthProvider -> AuthProvider: json.Marshal(requestData)
+    AuthProvider -> Client: GetAudience()
+    activate Client
+    Client --> AuthProvider: audience URL
+    deactivate Client
+    
+    AuthProvider -> AuthProvider: Create HTTP POST Request\nPOST {audience}/v1/authorizations
+    AuthProvider -> AuthProvider: Generate Idempotency-Key\n(amount.value + timestamp.UnixNano())
+    AuthProvider -> AuthProvider: Set Headers:\n- Authorization: Bearer {token}\n- Idempotency-Key: {key}\n- Content-Type: application/json
+    
+    AuthProvider -> Client: GetHttpClient()
+    activate Client
+    Client --> AuthProvider: *http.Client
+    deactivate Client
+    
+    AuthProvider -> AkuaAPI: POST /v1/authorizations\n{requestBody with capture.mode=MANUAL}
+    activate AkuaAPI
+    
+    alt Authorization Failed
+        AkuaAPI --> AuthProvider: Error Response (400/500/etc.)
+        AuthProvider --> Test: Return Error
+        deactivate AkuaAPI
+        deactivate AuthProvider
+        Test --> Test: t.Fatal(err)
+    else Authorization Success
+        AkuaAPI --> AuthProvider: 201 Created\nAuthorization Response\n{payment_id, transaction: {status: "AUTHORIZED", ...}}
+        deactivate AkuaAPI
+        
+        AuthProvider -> AuthProvider: json.Unmarshal(response)
+        AuthProvider --> Test: Return *Authorization\n{PaymentID, Transaction.Status: "AUTHORIZED"}
+        deactivate AuthProvider
+        
+        Test -> Test: Assert:\n- authorization != nil\n- authorization.PaymentID != nil
+    end
+end
+
+== Phase 3: Verify Payment State (Before Reversal) ==
+Test -> PaymentsProvider: GetPaymentById(ctx, client, paymentID)
+activate PaymentsProvider
+
+PaymentsProvider -> Client: JwtIsValid()
+activate Client
+Client --> PaymentsProvider: true
+deactivate Client
+
+PaymentsProvider -> Client: GetAudience()
+activate Client
+Client --> PaymentsProvider: audience URL
+deactivate Client
+
+PaymentsProvider -> PaymentsProvider: Create HTTP GET Request\nGET {audience}/v1/payments/{paymentId}
+PaymentsProvider -> PaymentsProvider: Set Headers:\n- Authorization: Bearer {token}\n- Content-Type: application/json
+
+PaymentsProvider -> Client: GetHttpClient()
+activate Client
+Client --> PaymentsProvider: *http.Client
+deactivate Client
+
+PaymentsProvider -> AkuaAPI: GET /v1/payments/{paymentId}
+activate AkuaAPI
+
+AkuaAPI --> PaymentsProvider: 200 OK\nPayment Response:\n{\n  id: payment_id,\n  status: "AUTHORIZED",\n  capture.mode: "MANUAL",\n  transactions: [\n    {type: "AUTHORIZATION", status: "AUTHORIZED", ...}\n  ]\n}
+deactivate AkuaAPI
+
+PaymentsProvider -> PaymentsProvider: json.Unmarshal(response)
+PaymentsProvider --> Test: Return *Payment\n{Status: "AUTHORIZED", Capture.Mode: "MANUAL"}
+deactivate PaymentsProvider
+
+Test -> Test: Assert:\n- payment.Capture.Mode == "MANUAL"\n- payment.Status == "AUTHORIZED"\n- payment.Transactions.length == 1\n- payment.Transactions[0].Type == "AUTHORIZATION"
+
+== Phase 4: Manual Reversal Request ==
+Test -> Test: Prepare Reversal:\nCall Reversal(ctx, client, paymentID)
+activate Test
+
+Test -> AuthProvider: Reversal(ctx, client, paymentID)
+activate AuthProvider
+
+AuthProvider -> Client: JwtIsValid()
+activate Client
+Client --> AuthProvider: true
+deactivate Client
+
+AuthProvider -> Client: GetAudience()
+activate Client
+Client --> AuthProvider: audience URL
+deactivate Client
+
+AuthProvider -> AuthProvider: Create HTTP POST Request\nPOST {audience}/v1/payments/{paymentId}/reversals
+AuthProvider -> AuthProvider: Generate Idempotency-Key\n(paymentID + timestamp.UnixNano())
+AuthProvider -> AuthProvider: Set Headers:\n- Authorization: Bearer {token}\n- Idempotency-Key: {key}\n- Content-Type: application/json
+
+AuthProvider -> Client: GetHttpClient()
+activate Client
+Client --> AuthProvider: *http.Client
+deactivate Client
+
+AuthProvider -> AkuaAPI: POST /v1/payments/{paymentId}/reversals
+activate AkuaAPI
+
+alt Reversal Failed
+    AkuaAPI --> AuthProvider: Error Response
+    AuthProvider --> Test: Return Error
+    deactivate AkuaAPI
+    deactivate AuthProvider
+    Test --> Test: t.Fatal(err)
+else Reversal Success
+    AkuaAPI --> AuthProvider: 200 OK / 201 Created\nReversal Response\n{\n  payment_id: payment_id,\n  transaction: {\n    type: "REVERSAL",\n    status: "REVERSED",\n    id: transaction_id,\n    amount: amount\n  }\n}
+    deactivate AkuaAPI
+    
+    AuthProvider -> AuthProvider: json.Unmarshal(response)
+    AuthProvider --> Test: Return *ReversalResponse\n{PaymentId, Transaction.Status: "REVERSED"}
+    deactivate AuthProvider
+    
+    Test -> Test: Log reversal response details:\n- Reversal ID (PaymentId)\n- Reversal Status\n- Reversal Amount
+end
+
+== Phase 5: Verify Final Payment State (After Reversal) ==
+Test -> PaymentsProvider: GetPaymentById(ctx, client, paymentID)
+activate PaymentsProvider
+
+PaymentsProvider -> Client: JwtIsValid()
+activate Client
+Client --> PaymentsProvider: true
+deactivate Client
+
+PaymentsProvider -> PaymentsProvider: Create HTTP GET Request\nGET {audience}/v1/payments/{paymentId}
+PaymentsProvider -> PaymentsProvider: Set Headers
+
+PaymentsProvider -> Client: GetHttpClient()
+activate Client
+Client --> PaymentsProvider: *http.Client
+deactivate Client
+
+PaymentsProvider -> AkuaAPI: GET /v1/payments/{paymentId}
+activate AkuaAPI
+
+AkuaAPI --> PaymentsProvider: 200 OK\nFinal Payment Response:\n{\n  id: payment_id,\n  status: "CANCELLED",\n  capture.mode: "MANUAL",\n  transactions: [\n    {type: "AUTHORIZATION", status: "AUTHORIZED", ...},\n    {type: "REVERSAL", status: "REVERSED", ...}\n  ]\n}
+deactivate AkuaAPI
+
+PaymentsProvider -> PaymentsProvider: json.Unmarshal(response)
+PaymentsProvider --> Test: Return *Payment\nwith both transactions:\n- AUTHORIZATION transaction\n- REVERSAL transaction
+deactivate PaymentsProvider
+
+Test -> Test: Verify Final State:\n- payment.Transactions.length == 2\n- payment.Transactions[0].Type == "AUTHORIZATION"\n- payment.Transactions[1].Type == "REVERSAL"\n- payment.Status == "CANCELLED"
+
+Test -> Test: Assert:\n- lastPaymentState.Status == "CANCELLED"\n(expected payment status to be CANCELLED)
+
+note right of Test
+    **Key Points of Manual Reversal Flow:**
+    1. Authorization with MANUAL capture mode
+    2. Payment stays in "AUTHORIZED" state after authorization
+    3. Reversal cancels the authorized payment
+    4. Payment has 2 transactions after reversal:
+       - AUTHORIZATION transaction (status: AUTHORIZED)
+       - REVERSAL transaction (status: REVERSED)
+    5. Final payment status is "CANCELLED"
+    6. Reversal is used to cancel an authorized\n   but not yet captured payment
+end note
+
+@enduml
+
