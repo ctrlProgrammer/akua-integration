@@ -25,13 +25,10 @@ type CapturePaymentTransaction struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
 	Type   string `json:"type"`
-}
-
-type CapturePayment struct {
-	ID          string                    `json:"id"`
-	Transaction CapturePaymentTransaction `json:"transaction"`
+	Amount string `json:"amount"`
 }
 
 type CaptureResponse struct {
-	Payment CapturePayment `json:"payment"`
+	PaymentId   string                    `json:"payment_id"`
+	Transaction CapturePaymentTransaction `json:"transaction"`
 }

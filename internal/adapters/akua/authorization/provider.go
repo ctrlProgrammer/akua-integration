@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -81,13 +82,7 @@ func (p *AuthorizationProvider) Capture(ctx context.Context, client *adaters_aku
 		return nil, adaters_akua.ErrJWTTokenNotSet
 	}
 
-	requestBody, err := json.Marshal(requestData)
-
-	if err != nil {
-		return nil, err
-	}
-
-	request, err := http.NewRequest("POST", client.GetAudience()+"/v1/payments/"+requestData.ID+"/captures", bytes.NewBuffer(requestBody))
+	request, err := http.NewRequest("POST", client.GetAudience()+"/v1/payments/"+requestData.ID+"/captures", nil)
 
 	if err != nil {
 		return nil, err
@@ -113,8 +108,11 @@ func (p *AuthorizationProvider) Capture(ctx context.Context, client *adaters_aku
 		return nil, err
 	}
 
+	log.Println("Capture Response: ", string(bodyBytes))
+	log.Println("Capture Response Status Code: ", response.StatusCode)
+
 	switch response.StatusCode {
-	case http.StatusOK: // 200
+	case http.StatusOK, http.StatusCreated: // 200, 201
 		var capture CaptureResponse
 
 		err = json.Unmarshal(bodyBytes, &capture)

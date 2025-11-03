@@ -1,0 +1,150 @@
+@startuml Authorization Flow from CMD
+
+title Complete Authorization Flow - Payment Command
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam backgroundColor #FAFAFA
+
+actor "User\n(runs cmd)" as User
+participant "cmd/flows\npayment.go" as CmdFlow
+participant "akua.Client" as Client
+participant "akua.authorization\nAuthorizationProvider" as AuthProvider
+participant "Akua API\n/v1/authorizations" as AkuaAPI
+
+== Initialization Phase ==
+User -> CmdFlow: go run cmd/flows/payment.go\n(or similar command)
+activate CmdFlow
+
+CmdFlow -> Client: NewClient()
+activate Client
+Client -> Client: Load environment variables:\n- AKUA_CLIENT_ID\n- AKUA_CLIENT_SECRET\n- AKUA_AUDIENCE\n- AKUA_ORGANIZATION_ID\n- AKUA_COMMERCE_ID
+Client -> Client: Validate all env vars are set
+Client --> CmdFlow: *Client (or error)
+deactivate Client
+
+alt Client Creation Failed
+    CmdFlow --> User: Return Error\n(Missing environment variable)
+    deactivate CmdFlow
+else Client Created Successfully
+    CmdFlow -> Client: LoadJwtToken()
+    activate Client
+    
+    Client -> Client: Prepare OAuth request body\n(grant_type, client_id, client_secret, audience)
+    Client -> AkuaAPI: POST /oauth/token
+    activate AkuaAPI
+    
+    alt JWT Token Request Failed
+        AkuaAPI --> Client: Error Response (400/500)
+        Client --> CmdFlow: Return Error
+        deactivate Client
+        deactivate AkuaAPI
+        CmdFlow --> User: Failed to load JWT token
+        deactivate CmdFlow
+    else JWT Token Success
+        AkuaAPI --> Client: 201 Created\n{access_token, token_type, expires_in}
+        deactivate AkuaAPI
+        Client -> Client: Store access_token
+        Client --> CmdFlow: JWT Token loaded
+        deactivate Client
+    end
+end
+
+== Authorization Request Phase ==
+CmdFlow -> AuthProvider: NewAuthorizationProvider()
+activate AuthProvider
+AuthProvider --> CmdFlow: *AuthorizationProvider
+deactivate AuthProvider
+
+CmdFlow -> CmdFlow: Prepare AuthorizeRequest:\n- Amount (currency, value)\n- Intent (authorization/pre-authorization)\n- MerchantId\n- Instrument (card details)\n- Capture (mode: automatic/manual)
+
+CmdFlow -> AuthProvider: Authorize(ctx, client, requestData)
+activate AuthProvider
+
+== Authorization Validation ==
+AuthProvider -> Client: JwtIsValid()
+activate Client
+Client --> AuthProvider: true/false
+deactivate Client
+
+alt JWT Token Invalid
+    AuthProvider --> CmdFlow: Error: ErrJWTTokenNotSet
+    deactivate AuthProvider
+    CmdFlow --> User: Authorization failed:\nJWT token not set
+    deactivate CmdFlow
+else JWT Token Valid
+    AuthProvider -> AuthProvider: json.Marshal(requestData)
+    
+    alt JSON Marshal Failed
+        AuthProvider --> CmdFlow: Return Error
+        deactivate AuthProvider
+        CmdFlow --> User: Failed to marshal request
+        deactivate CmdFlow
+    else JSON Marshal Success
+        AuthProvider -> Client: GetAudience()
+        activate Client
+        Client --> AuthProvider: audience URL
+        deactivate Client
+        
+        AuthProvider -> AuthProvider: Create HTTP POST Request\nPOST {audience}/v1/authorizations
+        AuthProvider -> AuthProvider: Generate Idempotency-Key\n(amount.value + timestamp.UnixNano())
+        AuthProvider -> AuthProvider: Set Headers:\n- Authorization: Bearer {token}\n- Idempotency-Key: {key}\n- Content-Type: application/json
+        
+        AuthProvider -> Client: GetHttpClient()
+        activate Client
+        Client --> AuthProvider: *http.Client
+        deactivate Client
+        
+        AuthProvider -> AkuaAPI: POST /v1/authorizations\n{requestBody with headers}
+        activate AkuaAPI
+        
+        alt HTTP Request Failed
+            AkuaAPI --> AuthProvider: Network Error
+            AuthProvider --> CmdFlow: Return Error\n(HTTP request failed)
+            deactivate AkuaAPI
+            deactivate AuthProvider
+            CmdFlow --> User: Network error occurred
+            deactivate CmdFlow
+        else HTTP Request Success
+            AkuaAPI --> AuthProvider: HTTP Response
+            deactivate AkuaAPI
+            
+            AuthProvider -> AuthProvider: Read Response Body
+            AuthProvider -> AuthProvider: Check Status Code
+            
+            alt Status Code == 201 Created
+                AuthProvider -> AuthProvider: json.Unmarshal(response)\nto authorization.Authorization
+                
+                alt JSON Unmarshal Failed
+                    AuthProvider --> CmdFlow: Return Error\n(JSON parsing failed)
+                    deactivate AuthProvider
+                    CmdFlow --> User: Failed to parse response
+                    deactivate CmdFlow
+                else JSON Unmarshal Success
+                    AuthProvider --> CmdFlow: Return *Authorization\nwith status, transaction, etc.
+                    deactivate AuthProvider
+                    
+                    CmdFlow -> CmdFlow: Process Authorization Result:\n- Check status (approved/declined/rejected)\n- Check status_detail\n- Extract payment_id, transaction_id
+                    
+                    alt Authorization Approved
+                        CmdFlow --> User: ✅ Authorization Success\nPayment ID: {id}\nStatus: approved
+                    else Authorization Declined
+                        CmdFlow --> User: ❌ Authorization Declined\nReason: {status_detail}\n(expired/fraudulent/insufficient_funds/etc.)
+                    else Authorization Rejected
+                        CmdFlow --> User: ❌ Authorization Rejected\nReason: {status_detail}
+                    end
+                    
+                    deactivate CmdFlow
+                end
+            else Status Code == 400/404/500/etc.
+                AuthProvider --> CmdFlow: Return Error\nUnexpected status code {code}: {message}
+                deactivate AuthProvider
+                CmdFlow --> User: ❌ Authorization Failed\nStatus: {code}\nError: {message}
+                deactivate CmdFlow
+            end
+        end
+    end
+end
+
+@enduml
+

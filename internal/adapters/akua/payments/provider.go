@@ -65,3 +65,47 @@ func (p *PaymentsProvider) GetPayments(ctx context.Context, client *internal_ada
 		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
 	}
 }
+
+func (p *PaymentsProvider) GetPaymentById(ctx context.Context, client *internal_adapters_akua.Client, paymentId string) (*payment.Payment, error) {
+	if !client.JwtIsValid() {
+		return nil, internal_adapters_akua.ErrJWTTokenNotSet
+	}
+
+	request, err := http.NewRequest("GET", client.GetAudience()+"/v1/payments/"+paymentId, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Authorization", "Bearer "+client.GetJwtToken())
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := client.GetHttpClient().Do(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	bodyBytes, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch response.StatusCode {
+	case http.StatusOK: // 200
+		var payment payment.Payment
+
+		err = json.Unmarshal(bodyBytes, &payment)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &payment, nil
+	default: // 400, 500, etc.
+		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
+	}
+}
