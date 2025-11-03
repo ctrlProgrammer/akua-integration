@@ -128,6 +128,7 @@ These credentials are required for:
 ### Flow Structure
 
 ![Integration Architecture](internal/adapters/akua/integration_structure_simplified.png)
+![Integration Architecture complete](internal/adapters/akua/diagram.svg)
 
 All flows follow a consistent structure:
 
