@@ -29,7 +29,7 @@ Create a `.env` file in the project root with the following environment variable
 ```env
 AKUA_CLIENT_ID=your_client_id
 AKUA_CLIENT_SECRET=your_client_secret
-AKUA_AUDIENCE=https://api.akua.com
+AKUA_AUDIENCE=https://sandbox.akua.la
 AKUA_ORGANIZATION_ID=your_organization_id
 AKUA_COMMERCE_ID=your_commerce_id
 ```
