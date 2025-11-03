@@ -66,6 +66,14 @@ These credentials are required for:
 All flows follow a consistent structure:
 
 ```
+internal/adapters/
+├── akua
+internal/domain_modules**/
+├── organization
+├── commerce
+├── authorization
+├── instruments
+├── payment
 internal/flows/
 ├── authorize_auto_capture/
 │   ├── flow_test.go          # Test implementation
