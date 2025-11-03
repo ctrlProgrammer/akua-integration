@@ -87,7 +87,7 @@ func Test_GetPaymentById_Success(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	payment, err := provider.GetPaymentById(context.Background(), akuaClient, "pay-d448fa7jebdt9pu3tqjg")
+	payment, err := provider.GetPaymentById(context.Background(), akuaClient, "pay-d44a4o8rm5urhl4d7egg")
 
 	if err != nil {
 		t.Fatal(err)
