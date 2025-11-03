@@ -6,7 +6,7 @@ import (
 
 const (
 	INTENT_AUTHORIZE    = "authorization"
-	INTENT_PREAUTHORIZE = "preauthorization"
+	INTENT_PREAUTHORIZE = "pre-authorization"
 )
 
 type AuthorizeRequest struct {

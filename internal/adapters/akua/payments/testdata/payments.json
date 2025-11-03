@@ -1,0 +1,336 @@
+[
+  {
+    "id": "pay-d440nk8rm5urhl4d7dqg",
+    "external_client_trace_id": "",
+    "client_id": "cli-d42cejqq3i86gvgbavfg",
+    "capture": {
+      "mode": "MANUAL",
+      "estimated_date": null,
+      "estimated_date_reason": ""
+    },
+    "status": "AUTHORIZED",
+    "status_detail": "",
+    "initial_amount": 20,
+    "current_amount": 20,
+    "currency": "USD",
+    "country": "COL",
+    "organization_id": "org-d42cejqq3i86gvgbavg0",
+    "payment_instrument": {
+      "type": "",
+      "id": "",
+      "rail": {
+        "id": "",
+        "product": ""
+      }
+    },
+    "merchant_id": "",
+    "created_at": 1762134994,
+    "updated_at": 1762134995,
+    "transactions": [
+      {
+        "id": "trx-d440nk8rm5urhl4d7dq0",
+        "type": "AUTHORIZATION",
+        "status": "APPROVED",
+        "status_detail": "SUCCESS",
+        "amount": 20,
+        "timestamp": "",
+        "created_at": 1762134994,
+        "updated_at": 1762134995
+      }
+    ]
+  },
+  {
+    "id": "pay-d440n415r0jajk9m1rbg",
+    "external_client_trace_id": "",
+    "client_id": "cli-d42cejqq3i86gvgbavfg",
+    "capture": {
+      "mode": "AUTOMATIC",
+      "estimated_date": 1762134929,
+      "estimated_date_reason": "AUTOMATIC_REQUEST"
+    },
+    "status": "AUTHORIZED",
+    "status_detail": "",
+    "initial_amount": 20,
+    "current_amount": 20,
+    "currency": "USD",
+    "country": "COL",
+    "organization_id": "org-d42cejqq3i86gvgbavg0",
+    "payment_instrument": {
+      "type": "",
+      "id": "",
+      "rail": {
+        "id": "",
+        "product": ""
+      }
+    },
+    "merchant_id": "",
+    "created_at": 1762134928,
+    "updated_at": 1762134929,
+    "transactions": [
+      {
+        "id": "trx-d440n415r0jajk9m1rb0",
+        "type": "AUTHORIZATION",
+        "status": "APPROVED",
+        "status_detail": "SUCCESS",
+        "amount": 20,
+        "timestamp": "",
+        "created_at": 1762134928,
+        "updated_at": 1762134929
+      },
+      {
+        "id": "trx-d440n495r0jajk9m1rdg",
+        "type": "CAPTURE",
+        "status": "PENDING",
+        "amount": 20,
+        "timestamp": "",
+        "created_at": 1762134929,
+        "updated_at": 1762134929
+      }
+    ]
+  },
+  {
+    "id": "pay-d440mjh5r0jajk9m1r7g",
+    "external_client_trace_id": "",
+    "client_id": "cli-d42cejqq3i86gvgbavfg",
+    "capture": {
+      "mode": "AUTOMATIC",
+      "estimated_date": 1762134864,
+      "estimated_date_reason": "AUTOMATIC_REQUEST"
+    },
+    "status": "AUTHORIZED",
+    "status_detail": "",
+    "initial_amount": 100,
+    "current_amount": 100,
+    "currency": "USD",
+    "country": "COL",
+    "organization_id": "org-d42cejqq3i86gvgbavg0",
+    "payment_instrument": {
+      "type": "",
+      "id": "",
+      "rail": {
+        "id": "",
+        "product": ""
+      }
+    },
+    "merchant_id": "",
+    "created_at": 1762134862,
+    "updated_at": 1762134864,
+    "transactions": [
+      {
+        "id": "trx-d440mjh5r0jajk9m1r70",
+        "type": "AUTHORIZATION",
+        "status": "APPROVED",
+        "status_detail": "SUCCESS",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762134862,
+        "updated_at": 1762134864
+      },
+      {
+        "id": "trx-d440mk15r0jajk9m1r9g",
+        "type": "CAPTURE",
+        "status": "PENDING",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762134864,
+        "updated_at": 1762134864
+      }
+    ]
+  },
+  {
+    "id": "pay-d440b3tr2il9pckaravg",
+    "external_client_trace_id": "",
+    "client_id": "cli-d42cejqq3i86gvgbavfg",
+    "capture": {
+      "mode": "AUTOMATIC",
+      "estimated_date": 1762133393,
+      "estimated_date_reason": "AUTOMATIC_REQUEST"
+    },
+    "status": "CAPTURE_PRESENTED",
+    "status_detail": "",
+    "initial_amount": 100,
+    "current_amount": 100,
+    "currency": "USD",
+    "country": "COL",
+    "organization_id": "org-d42cejqq3i86gvgbavg0",
+    "payment_instrument": {
+      "type": "",
+      "id": "",
+      "rail": {
+        "id": "",
+        "product": ""
+      }
+    },
+    "merchant_id": "",
+    "created_at": 1762133392,
+    "updated_at": 1762133497,
+    "transactions": [
+      {
+        "id": "trx-d440b3tr2il9pckarav0",
+        "type": "AUTHORIZATION",
+        "status": "APPROVED",
+        "status_detail": "SUCCESS",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762133392,
+        "updated_at": 1762133497
+      },
+      {
+        "id": "trx-d440b4dr2il9pckarb1g",
+        "type": "CAPTURE",
+        "status": "PRESENTED",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762133393,
+        "updated_at": 1762133497
+      }
+    ]
+  },
+  {
+    "id": "pay-d440a7oin7u4bfd130q0",
+    "external_client_trace_id": "",
+    "client_id": "cli-d42cejqq3i86gvgbavfg",
+    "capture": {
+      "mode": "AUTOMATIC",
+      "estimated_date": 1762133281,
+      "estimated_date_reason": "AUTOMATIC_REQUEST"
+    },
+    "status": "CAPTURE_PRESENTED",
+    "status_detail": "",
+    "initial_amount": 100,
+    "current_amount": 100,
+    "currency": "USD",
+    "country": "COL",
+    "organization_id": "org-d42cejqq3i86gvgbavg0",
+    "payment_instrument": {
+      "type": "",
+      "id": "",
+      "rail": {
+        "id": "",
+        "product": ""
+      }
+    },
+    "merchant_id": "",
+    "created_at": 1762133280,
+    "updated_at": 1762133497,
+    "transactions": [
+      {
+        "id": "trx-d440a7oin7u4bfd130pg",
+        "type": "AUTHORIZATION",
+        "status": "APPROVED",
+        "status_detail": "SUCCESS",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762133280,
+        "updated_at": 1762133497
+      },
+      {
+        "id": "trx-d440a88in7u4bfd130s0",
+        "type": "CAPTURE",
+        "status": "PRESENTED",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762133281,
+        "updated_at": 1762133497
+      }
+    ]
+  },
+  {
+    "id": "pay-d440a215r0jajk9m1r3g",
+    "external_client_trace_id": "",
+    "client_id": "cli-d42cejqq3i86gvgbavfg",
+    "capture": {
+      "mode": "AUTOMATIC",
+      "estimated_date": 1762133258,
+      "estimated_date_reason": "AUTOMATIC_REQUEST"
+    },
+    "status": "CAPTURE_PRESENTED",
+    "status_detail": "",
+    "initial_amount": 100,
+    "current_amount": 100,
+    "currency": "USD",
+    "country": "COL",
+    "organization_id": "org-d42cejqq3i86gvgbavg0",
+    "payment_instrument": {
+      "type": "",
+      "id": "",
+      "rail": {
+        "id": "",
+        "product": ""
+      }
+    },
+    "merchant_id": "",
+    "created_at": 1762133256,
+    "updated_at": 1762133497,
+    "transactions": [
+      {
+        "id": "trx-d440a215r0jajk9m1r30",
+        "type": "AUTHORIZATION",
+        "status": "APPROVED",
+        "status_detail": "SUCCESS",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762133256,
+        "updated_at": 1762133497
+      },
+      {
+        "id": "trx-d440a2h5r0jajk9m1r5g",
+        "type": "CAPTURE",
+        "status": "PRESENTED",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762133258,
+        "updated_at": 1762133497
+      }
+    ]
+  },
+  {
+    "id": "pay-d4406c15r0jajk9m1qvg",
+    "external_client_trace_id": "",
+    "client_id": "cli-d42cejqq3i86gvgbavfg",
+    "capture": {
+      "mode": "AUTOMATIC",
+      "estimated_date": 1762132786,
+      "estimated_date_reason": "AUTOMATIC_REQUEST"
+    },
+    "status": "CAPTURE_PRESENTED",
+    "status_detail": "",
+    "initial_amount": 100,
+    "current_amount": 100,
+    "currency": "USD",
+    "country": "COL",
+    "organization_id": "org-d42cejqq3i86gvgbavg0",
+    "payment_instrument": {
+      "type": "",
+      "id": "",
+      "rail": {
+        "id": "",
+        "product": ""
+      }
+    },
+    "merchant_id": "",
+    "created_at": 1762132785,
+    "updated_at": 1762133497,
+    "transactions": [
+      {
+        "id": "trx-d4406c15r0jajk9m1qv0",
+        "type": "AUTHORIZATION",
+        "status": "APPROVED",
+        "status_detail": "SUCCESS",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762132785,
+        "updated_at": 1762133497
+      },
+      {
+        "id": "trx-d4406ch5r0jajk9m1r1g",
+        "type": "CAPTURE",
+        "status": "PRESENTED",
+        "amount": 100,
+        "timestamp": "",
+        "created_at": 1762132786,
+        "updated_at": 1762133497
+      }
+    ]
+  }
+]

@@ -73,3 +73,81 @@ func Test_Authorize_Success(t *testing.T) {
 	assert.NotNil(t, authorization)
 	assert.NotNil(t, authorization.PaymentID)
 }
+
+func Test_PreAuthorize_Success(t *testing.T) {
+	akuaClient, provider, err := Setup()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	request := AuthorizeRequest{
+		Amount: instruments.AmountObject{
+			Currency: "USD",
+			Value:    20.00,
+		},
+		Intent: INTENT_PREAUTHORIZE,
+		Capture: instruments.CaptureObject{
+			Mode: instruments.CAPTURE_MODE_AUTOMATIC,
+		},
+		MerchantId: akuaClient.GetMerchantId(),
+		Instrument: instruments.InstrumentObject{
+			Type: "CARD",
+			Card: instruments.Instrument{
+				Number:          instruments.CARD_APPROVED_CREDIT,
+				CVV:             "123",
+				ExpirationMonth: "12",
+				ExpirationYear:  "26",
+				HolderName:      "John Doe",
+			},
+		},
+	}
+
+	authorization, err := provider.Authorize(context.Background(), akuaClient, request)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, authorization)
+	assert.NotNil(t, authorization.PaymentID)
+}
+
+func Test_Authorize_ManualCapture_Success(t *testing.T) {
+	akuaClient, provider, err := Setup()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	request := AuthorizeRequest{
+		Amount: instruments.AmountObject{
+			Currency: "USD",
+			Value:    20.00,
+		},
+		Intent: INTENT_AUTHORIZE,
+		Capture: instruments.CaptureObject{
+			Mode: instruments.CAPTURE_MODE_MANUAL,
+		},
+		MerchantId: akuaClient.GetMerchantId(),
+		Instrument: instruments.InstrumentObject{
+			Type: "CARD",
+			Card: instruments.Instrument{
+				Number:          instruments.CARD_APPROVED_CREDIT,
+				CVV:             "123",
+				ExpirationMonth: "12",
+				ExpirationYear:  "26",
+				HolderName:      "John Doe",
+			},
+		},
+	}
+
+	authorization, err := provider.Authorize(context.Background(), akuaClient, request)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, authorization)
+	assert.NotNil(t, authorization.PaymentID)
+}

@@ -3,6 +3,9 @@ package adapters_akua_payments
 import (
 	adapters_akua "akua-project/internal/adapters/akua"
 	"context"
+	"encoding/json"
+	"log"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -47,6 +50,29 @@ func Test_GetPayments_Success(t *testing.T) {
 
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	log.Println("Payments: ", len(payments))
+
+	paymentsJsonPath := filepath.Join("testdata", "payments.json")
+	err = nil
+
+	// Ensure testdata directory exists
+	testdataDir := filepath.Dir(paymentsJsonPath)
+	if err := os.MkdirAll(testdataDir, 0755); err != nil {
+		t.Fatalf("failed to create testdata directory: %v", err)
+	}
+
+	file, err := os.Create(paymentsJsonPath)
+	if err != nil {
+		t.Fatalf("failed to create payments.json: %v", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(payments); err != nil {
+		t.Fatalf("failed to encode payments to JSON: %v", err)
 	}
 
 	assert.NotNil(t, payments)
