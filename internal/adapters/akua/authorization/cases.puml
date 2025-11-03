@@ -1,0 +1,131 @@
+@startuml Authorization Cases
+
+title Akua API - Authorization Flow Cases
+
+actor Client
+participant "AuthorizationProvider" as Provider
+participant "Akua API\n/v1/authorizations" as API
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+
+== Success: Approved Authorization ==
+Client -> Provider: Authorize(ctx, client, requestData)
+activate Provider
+
+Provider -> Provider: Validate JWT Token
+alt JWT Token Invalid
+    Provider --> Client: Return Error: ErrJWTTokenNotSet
+    deactivate Provider
+else JWT Token Valid
+    Provider -> Provider: Marshal requestData to JSON
+    Provider -> Provider: Create HTTP POST Request
+    Provider -> Provider: Set Headers\n(Authorization, Idempotency-Key, Content-Type)
+    Provider -> API: POST /v1/authorizations
+    activate API
+    
+    API --> Provider: Response 201 Created\nAuthorization with status="approved"
+    deactivate API
+    
+    Provider -> Provider: Unmarshal JSON Response
+    Provider --> Client: Return Authorization\n(Approved)
+    deactivate Provider
+end
+
+== Declined: Instrument Not Found ==
+Client -> Provider: Authorize(ctx, client, requestData)
+activate Provider
+
+Provider -> Provider: Validate JWT Token
+Provider -> Provider: Marshal requestData to JSON
+Provider -> Provider: Create HTTP POST Request
+Provider -> Provider: Set Headers
+Provider -> API: POST /v1/authorizations
+activate API
+
+API --> Provider: Response 404 Not Found\nor 400 Bad Request\n(Instrument not found)
+deactivate API
+
+Provider --> Client: Return Error:\nUnexpected Status Code 404/400
+deactivate Provider
+
+== Declined: Fraudulent Transaction ==
+Client -> Provider: Authorize(ctx, client, requestData)
+activate Provider
+
+Provider -> Provider: Validate JWT Token
+Provider -> Provider: Marshal requestData to JSON
+Provider -> Provider: Create HTTP POST Request
+Provider -> Provider: Set Headers
+Provider -> API: POST /v1/authorizations
+activate API
+
+API --> Provider: Response 201 Created\nAuthorization with\nstatus="declined"\nstatus_detail="fraudulent"
+deactivate API
+
+Provider -> Provider: Unmarshal JSON Response
+Provider --> Client: Return Authorization\n(Declined - Fraudulent)
+deactivate Provider
+
+== Declined: Expired Card ==
+Client -> Provider: Authorize(ctx, client, requestData)
+activate Provider
+
+Provider -> Provider: Validate JWT Token
+Provider -> Provider: Marshal requestData to JSON
+Provider -> Provider: Create HTTP POST Request
+Provider -> Provider: Set Headers
+Provider -> API: POST /v1/authorizations
+activate API
+
+API --> Provider: Response 201 Created\nAuthorization with\nstatus="declined"\nstatus_detail="expired"
+deactivate API
+
+Provider -> Provider: Unmarshal JSON Response
+Provider --> Client: Return Authorization\n(Declined - Expired)
+deactivate Provider
+
+== Processing Error ==
+Client -> Provider: Authorize(ctx, client, requestData)
+activate Provider
+
+Provider -> Provider: Validate JWT Token
+Provider -> Provider: Marshal requestData to JSON
+Provider -> Provider: Create HTTP POST Request
+Provider -> Provider: Set Headers
+Provider -> API: POST /v1/authorizations
+activate API
+
+alt Network/Connection Error
+    API --> Provider: HTTP Request Error\n(network failure, timeout)
+    Provider --> Client: Return Error:\nHTTP Request Error
+    deactivate Provider
+    deactivate API
+else Server Error
+    API --> Provider: Response 500 Internal Server Error\nor 503 Service Unavailable
+    deactivate API
+    
+    Provider -> Provider: Read Response Body
+    Provider --> Client: Return Error:\nUnexpected Status Code 500/503\nwith error message
+    deactivate Provider
+end
+
+== Rejected: General Decline ==
+Client -> Provider: Authorize(ctx, client, requestData)
+activate Provider
+
+Provider -> Provider: Validate JWT Token
+Provider -> Provider: Marshal requestData to JSON
+Provider -> Provider: Create HTTP POST Request
+Provider -> Provider: Set Headers
+Provider -> API: POST /v1/authorizations
+activate API
+
+API --> Provider: Response 201 Created\nAuthorization with\nstatus="rejected"\nor status="declined"\nstatus_detail="insufficient_funds"\nor other rejection reason
+deactivate API
+
+Provider -> Provider: Unmarshal JSON Response
+Provider --> Client: Return Authorization\n(Rejected/Declined)
+deactivate Provider
+
+@enduml
