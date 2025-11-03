@@ -38,7 +38,21 @@ These credentials are required for:
 
 - OAuth token authentication
 - API request authorization
-- Merchant context identification
+
+## How to execute and test a flow
+
+1. Define what will be the executed flow, you can select one of the next ones:
+   a. Authorize automatic capture
+   b. Authorize with manual capture
+   c. Authorize with reversal (This will use manual capture to maintain the transaction state)
+   d. Authorize with refund (This will use automatic capture and when it is captured will execute the refund)
+
+   ```
+   go test -v ./internal/flows/authorize_auto_capture
+   go test -v ./internal/flows/authorize_auto_refund
+   go test -v ./internal/flows/authorize_manual_cature
+   go test -v ./internal/flows/authorize_manual_reversal
+   ```
 
 ## Flow Documentation
 
