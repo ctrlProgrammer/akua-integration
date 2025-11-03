@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -41,8 +40,6 @@ func (p *AuthorizationProvider) Authorize(ctx context.Context, client *adaters_a
 	hour := time.Now()
 	idempotencyKey := fmt.Sprintf("%v%v", requestData.Amount.Value, hour.UnixNano())
 
-	log.Println("Idempotency Key: ", idempotencyKey)
-
 	// TODO Change the idempotency key to a more secure way
 	// Do it based on tx details to create a more realistic scenario
 	request.Header.Set("Idempotency-Key", idempotencyKey)
@@ -62,9 +59,6 @@ func (p *AuthorizationProvider) Authorize(ctx context.Context, client *adaters_a
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println("Response Body: ", string(bodyBytes))
-	log.Println("Response Status Code: ", response.StatusCode)
 
 	switch response.StatusCode {
 	case http.StatusCreated: // 201

@@ -4,7 +4,6 @@ import (
 	adapters_akua "akua-project/internal/adapters/akua"
 	"akua-project/internal/instruments"
 	"context"
-	"log"
 	"path/filepath"
 	"testing"
 
@@ -66,8 +65,6 @@ func Test_Authorize_Success(t *testing.T) {
 	}
 
 	authorization, err := provider.Authorize(context.Background(), akuaClient, request)
-
-	log.Println("Authorization: ", authorization)
 
 	if err != nil {
 		t.Fatal(err)
