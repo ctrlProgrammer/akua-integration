@@ -2,6 +2,8 @@
 
 This directory contains comprehensive payment flow implementations for the Akua payment integration. Each flow demonstrates different payment processing scenarios including authorization, capture, refund, and reversal operations.
 
+![Integration Architecture complete](internal/adapters/akua/integration_structure.svg)
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
@@ -186,8 +188,6 @@ All flows utilize:
 | **Auto Refund**     | `AUTOMATIC`  | `AUTHORIZED`/`CAPTURED` | Refund       | `REFUNDED`   | Return funds after capture   |
 
 ---
-
-![Integration Architecture complete](internal/adapters/akua/diagram.svg)
 
 ## Transaction Types Reference
 
