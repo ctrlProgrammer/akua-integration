@@ -44,11 +44,13 @@ These credentials are required for:
 1. Define which flow you want to execute. You can select one of the following:
 
    - Authorize automatic capture
+     - Flow Diagram: [Flow explanation](internal/flows/authorize_auto_capture/)
    - Authorize with manual capture
+     - Flow Diagram: [Flow explanation](internal/flows/authorize_manual_cature/)
    - Authorize with reversal
-     - This will use manual capture to maintain the transaction state
+     - Flow Diagram: [Flow explanation](internal/flows/authorize_manual_reversal/)
    - Authorize with refund
-     - This will use automatic capture, and when it is captured, will execute the refund
+     - Flow Diagram: [Flow explanation](internal/flows/authorize_auto_refund/)
 
    ***
 
