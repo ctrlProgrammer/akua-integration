@@ -126,3 +126,103 @@ func (p *AuthorizationProvider) Capture(ctx context.Context, client *adaters_aku
 		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
 	}
 }
+
+func (p *AuthorizationProvider) Reversal(ctx context.Context, client *adaters_akua.Client, paymentId string) (*ReversalResponse, error) {
+	if !client.JwtIsValid() {
+		return nil, adaters_akua.ErrJWTTokenNotSet
+	}
+
+	request, err := http.NewRequest("POST", client.GetAudience()+"/v1/payments/"+paymentId+"/reversals", nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	hour := time.Now()
+	idempotencyKey := fmt.Sprintf("%v%v", paymentId, hour.UnixNano())
+	request.Header.Set("Idempotency-Key", idempotencyKey)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", "Bearer "+client.GetJwtToken())
+
+	response, err := client.GetHttpClient().Do(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	bodyBytes, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Capture Response: ", string(bodyBytes))
+	log.Println("Capture Response Status Code: ", response.StatusCode)
+
+	switch response.StatusCode {
+	case http.StatusOK, http.StatusCreated: // 200, 201
+		var reversal ReversalResponse
+
+		err = json.Unmarshal(bodyBytes, &reversal)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &reversal, nil
+	default: // 400, 500, etc.
+		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
+	}
+}
+
+func (p *AuthorizationProvider) Refund(ctx context.Context, client *adaters_akua.Client, paymentId string) (*RefundResponse, error) {
+	if !client.JwtIsValid() {
+		return nil, adaters_akua.ErrJWTTokenNotSet
+	}
+
+	request, err := http.NewRequest("POST", client.GetAudience()+"/v1/payments/"+paymentId+"/refund", nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	hour := time.Now()
+	idempotencyKey := fmt.Sprintf("%v%v", paymentId, hour.UnixNano())
+	request.Header.Set("Idempotency-Key", idempotencyKey)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", "Bearer "+client.GetJwtToken())
+
+	response, err := client.GetHttpClient().Do(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	bodyBytes, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Capture Response: ", string(bodyBytes))
+	log.Println("Capture Response Status Code: ", response.StatusCode)
+
+	switch response.StatusCode {
+	case http.StatusOK, http.StatusCreated: // 200, 201
+		var refund RefundResponse
+
+		err = json.Unmarshal(bodyBytes, &refund)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &refund, nil
+	default: // 400, 500, etc.
+		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
+	}
+}
