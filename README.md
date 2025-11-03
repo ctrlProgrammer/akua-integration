@@ -11,7 +11,6 @@ This directory contains comprehensive payment flow implementations for the Akua 
   - [2. Authorization with Manual Capture](#2-authorization-with-manual-capture)
   - [3. Authorization with Manual Reversal](#3-authorization-with-manual-reversal)
   - [4. Authorization with Auto Refund](#4-authorization-with-auto-refund)
-- [Flow Diagrams](#flow-diagrams)
 - [Architecture Overview](#architecture-overview)
 
 ## Prerequisites
@@ -295,67 +294,6 @@ Test_Authorize_AutomaticCapture_Refund_Success
 
 ---
 
-## Flow Diagrams
-
-Each flow has a detailed PlantUML sequence diagram that visualizes the complete interaction between components. The diagrams are located in each flow's directory:
-
-### Available Diagrams
-
-1. **Auto Capture Flow Diagram**
-
-   - Path: `internal/flows/authorize_auto_capture/flow_diagram.puml`
-
-2. **Manual Capture Flow Diagram**
-
-   - Path: `internal/flows/authorize_manual_cature/flow_diagram.puml`
-
-3. **Manual Reversal Flow Diagram**
-
-   - Path: `internal/flows/authorize_manual_reversal/flow_diagram.puml`
-
-4. **Auto Refund Flow Diagram**
-   - Path: `internal/flows/authorize_auto_refund/flow_diagram.puml`
-
-### Viewing Flow Diagrams
-
-#### Option 1: VS Code Extension (Recommended)
-
-1. Install the **PlantUML** extension for VS Code
-2. Open any `.puml` file
-3. Press `Alt+D` or right-click → "Preview PlantUML"
-
-#### Option 2: PlantUML CLI
-
-1. Install PlantUML CLI:
-
-   ```bash
-   # Using Homebrew (macOS)
-   brew install plantuml
-
-   # Using package manager (Linux)
-   sudo apt-get install plantuml
-   ```
-
-2. Generate diagram:
-
-   ```bash
-   plantuml internal/flows/authorize_auto_capture/flow_diagram.puml
-   ```
-
-3. This generates a PNG image file in the same directory
-
-#### Option 3: Online Viewer
-
-1. Copy the contents of any `.puml` file
-2. Visit http://www.plantuml.com/plantuml/uml/
-3. Paste the content to view the diagram
-
-#### Option 4: GitHub Integration
-
-If you use a GitHub Actions workflow or CI/CD pipeline, you can automatically generate images from PlantUML files. Some repositories use tools like [PlantUML Action](https://github.com/marketplace/actions/plantuml-action) to render diagrams.
-
----
-
 ## Architecture Overview
 
 ### Flow Structure
@@ -398,38 +336,6 @@ All flows utilize:
 3. **Payments Provider** (`internal/adapters/akua/payments`)
    - `GetPaymentById()` - Retrieve payment details
    - Payment state verification
-
-### Flow Initialization Pattern
-
-All flows use a common initialization pattern:
-
-```go
-func InitializePaymentFlow(ctx context.Context) (*Client, *AuthorizationProvider, *PaymentsProvider, error) {
-    // 1. Load environment variables
-    InitializeEnvVariables()
-
-    // 2. Create Akua client
-    akuaClient, err := adapters_akua.NewClient()
-
-    // 3. Load JWT token
-    err = akuaClient.LoadJwtToken()
-
-    // 4. Create providers
-    return akuaClient, NewAuthorizationProvider(), NewPaymentsProvider(), nil
-}
-```
-
-### Error Handling
-
-All flows implement comprehensive error handling:
-
-- Environment variable validation
-- JWT token validation
-- HTTP request error handling
-- Response parsing validation
-- Status code verification
-
----
 
 ## Flow Comparison Matrix
 
@@ -517,7 +423,7 @@ Throughout the flows, you'll encounter these transaction types:
 
 ## Additional Resources
 
-- [Akua API Documentation](https://docs.akua.com) - Official API reference
+- [Akua API Documentation](https://docs.akua.la) - Official API reference
 - [Integration Architecture](./../adapters/akua/integration_structure.puml) - System architecture diagram
 - [Authorization Cases](./../adapters/akua/authorization/cases.puml) - Error case scenarios
 
