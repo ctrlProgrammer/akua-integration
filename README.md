@@ -23,6 +23,72 @@ Before running the tests, ensure you have:
 - Access to the Akua API environment (sandbox or production)
 - Network connectivity to the Akua API endpoints
 
+### Initializing Go for This Repository
+
+1. **Install Go**
+
+   If you don't have Go installed, download and install it from [golang.org](https://golang.org/dl/):
+
+   ```bash
+   # Verify Go installation
+   go version
+   # Should output: go version go1.24.6 or higher
+   ```
+
+2. **Clone or Navigate to the Repository**
+
+   ```bash
+   # If cloning from git
+   git clone <repository-url>
+   cd akua-project
+
+   # Or if you already have the repository
+   cd akua-project
+   ```
+
+3. **Initialize Go Module (if needed)**
+
+   The project uses the module `akua-project`. If you need to reinitialize:
+
+   ```bash
+   # This should already be done, but if needed:
+   go mod init akua-project
+   ```
+
+4. **Download Dependencies**
+
+   Install all required Go dependencies:
+
+   ```bash
+   go mod download
+   ```
+
+   Or use `go mod tidy` to ensure dependencies match the imports:
+
+   ```bash
+   go mod tidy
+   ```
+
+5. **Verify Setup**
+
+   Verify the project structure and dependencies:
+
+   ```bash
+   # Check module information
+   go mod verify
+
+   # List dependencies
+   go list -m all
+   ```
+
+   **Expected output:** You should see dependencies like:
+
+   - `github.com/joho/godotenv`
+   - `github.com/stretchr/testify`
+   - And other required packages
+
+**You're now ready to proceed with environment setup and running tests!**
+
 ## Environment Setup
 
 Create a `.env` file in the project root with the following environment variables:
