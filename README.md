@@ -50,6 +50,8 @@ These credentials are required for:
    - Authorize with refund
      - This will use automatic capture, and when it is captured, will execute the refund
 
+   ***
+
    ```
    go test -v ./internal/flows/authorize_auto_capture
    go test -v ./internal/flows/authorize_auto_refund
