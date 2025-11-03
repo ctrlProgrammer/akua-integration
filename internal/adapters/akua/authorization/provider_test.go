@@ -35,7 +35,9 @@ func Setup() (*adapters_akua.Client, *AuthorizationProvider, error) {
 	return akuaClient, NewAuthorizationProvider(), nil
 }
 
-func Test_Authorize_Success(t *testing.T) {
+// With this we will create an authorization with the automatic capture method
+// Will be approved and captured automatically
+func Test_Authorize_AutomaticCapture_Success(t *testing.T) {
 	akuaClient, provider, err := Setup()
 
 	if err != nil {
@@ -74,6 +76,8 @@ func Test_Authorize_Success(t *testing.T) {
 	assert.NotNil(t, authorization.PaymentID)
 }
 
+// With this we will create an authorization with the automatic capture method
+// Will be approved and captured automatically
 func Test_PreAuthorize_Success(t *testing.T) {
 	akuaClient, provider, err := Setup()
 
@@ -113,6 +117,8 @@ func Test_PreAuthorize_Success(t *testing.T) {
 	assert.NotNil(t, authorization.PaymentID)
 }
 
+// With this we will create an authorization with the manual cature method
+// Will be approved but not captured automatically
 func Test_Authorize_ManualCapture_Success(t *testing.T) {
 	akuaClient, provider, err := Setup()
 

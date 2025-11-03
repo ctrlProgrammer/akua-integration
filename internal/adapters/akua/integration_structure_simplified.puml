@@ -6,18 +6,18 @@ skinparam componentStyle rectangle
 skinparam linetype ortho
 
 package "Domain" <<Layer>> {
-    [authorization] as AuthDomain
     [commerce] as CommerceDomain
     [organization] as OrgDomain
+    [authorization] as AuthDomain
     [payment] as PaymentDomain
     [instruments] as InstrumentDomain
 }
 
 package "Adapters" <<Layer>> {
     [akua.Client] as Client
-    [AuthorizationProvider] as AuthAdapter
     [CommerceProvider] as CommerceAdapter
     [OrganizationProvider] as OrgAdapter
+    [AuthorizationProvider] as AuthAdapter
     [PaymentsProvider] as PaymentAdapter
 }
 
@@ -30,6 +30,7 @@ AuthDomain ..> AuthAdapter
 CommerceDomain ..> CommerceAdapter
 OrgDomain ..> OrgAdapter
 PaymentDomain ..> PaymentAdapter
+PaymentDomain ..> AuthAdapter
 InstrumentDomain ..> AuthAdapter
 
 ' Adapter to Client connections

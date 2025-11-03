@@ -16,3 +16,22 @@ type AuthorizeRequest struct {
 	Instrument instruments.InstrumentObject `json:"instrument"`
 	Capture    instruments.CaptureObject    `json:"capture"`
 }
+
+type CaptureRequest struct {
+	ID string `json:"id"`
+}
+
+type CapturePaymentTransaction struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	Type   string `json:"type"`
+}
+
+type CapturePayment struct {
+	ID          string                    `json:"id"`
+	Transaction CapturePaymentTransaction `json:"transaction"`
+}
+
+type CaptureResponse struct {
+	Payment CapturePayment `json:"payment"`
+}

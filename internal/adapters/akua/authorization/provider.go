@@ -75,3 +75,56 @@ func (p *AuthorizationProvider) Authorize(ctx context.Context, client *adaters_a
 		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
 	}
 }
+
+func (p *AuthorizationProvider) Capture(ctx context.Context, client *adaters_akua.Client, requestData CaptureRequest) (*CaptureResponse, error) {
+	if !client.JwtIsValid() {
+		return nil, adaters_akua.ErrJWTTokenNotSet
+	}
+
+	requestBody, err := json.Marshal(requestData)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("POST", client.GetAudience()+"/v1/payments/"+requestData.ID+"/captures", bytes.NewBuffer(requestBody))
+
+	if err != nil {
+		return nil, err
+	}
+
+	hour := time.Now()
+	idempotencyKey := fmt.Sprintf("%v%v", requestData.ID, hour.UnixNano())
+	request.Header.Set("Idempotency-Key", idempotencyKey)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", "Bearer "+client.GetJwtToken())
+
+	response, err := client.GetHttpClient().Do(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	bodyBytes, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch response.StatusCode {
+	case http.StatusOK: // 200
+		var capture CaptureResponse
+
+		err = json.Unmarshal(bodyBytes, &capture)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &capture, nil
+	default: // 400, 500, etc.
+		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
+	}
+}
