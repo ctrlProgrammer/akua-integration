@@ -1,0 +1,45 @@
+@startuml Integration Structure Simplified
+
+title Akua Project - Integration Architecture (Simplified)
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+package "Domain" <<Layer>> {
+    [authorization] as AuthDomain
+    [commerce] as CommerceDomain
+    [organization] as OrgDomain
+    [payment] as PaymentDomain
+    [instruments] as InstrumentDomain
+}
+
+package "Adapters" <<Layer>> {
+    [akua.Client] as Client
+    [AuthorizationProvider] as AuthAdapter
+    [CommerceProvider] as CommerceAdapter
+    [OrganizationProvider] as OrgAdapter
+    [PaymentsProvider] as PaymentAdapter
+}
+
+cloud "Akua API" {
+    [REST API] as AkuaAPI
+}
+
+' Domain to Adapter connections
+AuthDomain ..> AuthAdapter
+CommerceDomain ..> CommerceAdapter
+OrgDomain ..> OrgAdapter
+PaymentDomain ..> PaymentAdapter
+InstrumentDomain ..> AuthAdapter
+
+' Adapter to Client connections
+AuthAdapter --> Client
+CommerceAdapter --> Client
+OrgAdapter --> Client
+PaymentAdapter --> Client
+
+' Client to External API
+Client --> AkuaAPI : HTTP\nJWT Auth
+
+@enduml
+
