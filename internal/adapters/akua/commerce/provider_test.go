@@ -100,3 +100,44 @@ func Test_CreateCommerce_Success(t *testing.T) {
 	assert.NotNil(t, generatedCommerce)
 	assert.NotNil(t, generatedCommerce.ID)
 }
+
+func Test_UpdateCommerceRails_Success(t *testing.T) {
+	akuaClient, provider, err := Setup()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	request := UpdateCommerceRailsRequest{
+		ID: akuaClient.GetMerchantId(),
+		Rails: commerce.Rails{
+			"MASTERCARD": commerce.Rail{
+				MCC: "5678",
+				AnnualVolume: []commerce.AnnualVolume{
+					{
+						Currency: "USD",
+						Value:    1000000,
+					},
+				},
+				Products: commerce.Products{
+					"CREDIT": commerce.Product{
+						Enabled: true,
+					},
+					"DEBIT": commerce.Product{
+						Enabled: true,
+					},
+				},
+			},
+		},
+	}
+
+	generatedRails, err := provider.UpdateCommerceRails(context.Background(), akuaClient, request)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println("Generated Rails: ", generatedRails)
+
+	assert.NotNil(t, generatedRails)
+}

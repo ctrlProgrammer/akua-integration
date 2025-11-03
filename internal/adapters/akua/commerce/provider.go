@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	adaters_akua "akua-project/internal/adapters/akua"
@@ -108,6 +109,59 @@ func (p *CommerceProvider) CreateCommerce(ctx context.Context, client *adaters_a
 		}
 
 		return generatedCommerce, nil
+	default: // 400, 500, etc.
+		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
+	}
+}
+
+func (p *CommerceProvider) UpdateCommerceRails(ctx context.Context, client *adaters_akua.Client, requestData UpdateCommerceRailsRequest) (*commerce.Rails, error) {
+	if !client.JwtIsValid() {
+		return nil, adaters_akua.ErrJWTTokenNotSet
+	}
+
+	requestBody, err := json.Marshal(requestData.Rails)
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Request Body: ", string(requestBody))
+	log.Println("Request ID: ", requestData.ID)
+
+	request, err := http.NewRequest("PUT", client.GetAudience()+"/v1/merchants/"+requestData.ID+"/rails", bytes.NewBuffer(requestBody))
+
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Authorization", "Bearer "+client.GetJwtToken())
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := client.GetHttpClient().Do(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	bodyBytes, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch response.StatusCode {
+	case http.StatusOK: // 200
+		generatedRails := &commerce.Rails{}
+
+		err = json.Unmarshal(bodyBytes, &generatedRails)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return generatedRails, nil
 	default: // 400, 500, etc.
 		return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, string(bodyBytes))
 	}

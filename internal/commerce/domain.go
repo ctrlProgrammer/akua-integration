@@ -12,21 +12,21 @@ type Address struct {
 }
 
 type Fee struct {
-	FeeType        string  `json:"fee_type"`
-	TransactionFee float64 `json:"transaction_fee"`
-	WithdrawalFee  float64 `json:"withdrawal_fee"`
-	Currency       string  `json:"currency"`
+	FeeType        string  `json:"fee_type,omitempty"`
+	TransactionFee float64 `json:"transaction_fee,omitempty"`
+	WithdrawalFee  float64 `json:"withdrawal_fee,omitempty"`
+	Currency       string  `json:"currency,omitempty"`
 }
 
 type Settlement struct {
-	Frequency string `json:"frequency"`
+	Frequency string `json:"frequency,omitempty"`
 }
 
 type Product struct {
-	Enabled           bool       `json:"enabled"`
-	MerchantNetworkID string     `json:"merchant_network_id"`
-	Settlement        Settlement `json:"settlement"`
-	Fee               Fee        `json:"fee"`
+	Enabled           bool        `json:"enabled,omitempty"`
+	MerchantNetworkID string      `json:"merchant_network_id,omitempty"`
+	Settlement        *Settlement `json:"settlement,omitempty"`
+	Fee               *Fee        `json:"fee,omitempty"`
 }
 
 type Products map[string]Product
@@ -37,12 +37,12 @@ type AnnualVolume struct {
 }
 
 type Rail struct {
-	MCC                     string         `json:"mcc"`
-	RailMerchantExternalID  string         `json:"rail_merchant_external_id"`
-	PayfacID                string         `json:"payfac_id"`
-	MerchantVerificationVal string         `json:"merchant_verification_value"`
-	AnnualVolume            []AnnualVolume `json:"annual_volume"`
-	Products                Products       `json:"products"`
+	MCC                     string         `json:"mcc,omitempty"`
+	RailMerchantExternalID  string         `json:"rail_merchant_external_id,omitempty"`
+	PayfacID                string         `json:"payfac_id,omitempty"`
+	MerchantVerificationVal string         `json:"merchant_verification_value,omitempty"`
+	AnnualVolume            []AnnualVolume `json:"annual_volume,omitempty"`
+	Products                Products       `json:"products,omitempty"`
 }
 
 type Rails map[string]Rail

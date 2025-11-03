@@ -15,4 +15,10 @@ type CreateCommerceRequest struct {
 	BillingAddress      commerce.Address `json:"billing_address" validate:"required"`
 	LocationAddress     commerce.Address `json:"location_address" validate:"required"`
 	Website             string           `json:"website" validate:"required"`
+	Rails               commerce.Rails   `json:"rails" validate:"required"`
+}
+
+type UpdateCommerceRailsRequest struct {
+	ID    string         `json:"id" validate:"required"`
+	Rails commerce.Rails `json:"rails" validate:"required"`
 }
