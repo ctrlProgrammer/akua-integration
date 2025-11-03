@@ -1,139 +1,80 @@
 @startuml Integration Structure
 
-title Akua Project - Integration Architecture Structure
+title Akua Project - Integration Architecture
 
 skinparam componentStyle rectangle
 skinparam linetype ortho
-
-package "Domain Layer" {
-    [authorization.Provider\n<<interface>>] as AuthPort
-    [authorization.Service] as AuthService
-    [authorization.Authorization\nDomain Model] as AuthDomain
-    
-    [commerce.Provider\n<<interface>>] as CommercePort
-    [commerce.Service] as CommerceService
-    [commerce.Commerce\nDomain Model] as CommerceDomain
-    
-    [organization.Provider\n<<interface>>] as OrgPort
-    [organization.Service] as OrgService
-    [organization.Organization\nDomain Model] as OrgDomain
-    
-    [payment.Provider\n<<interface>>] as PaymentPort
-    [payment.Service] as PaymentService
-    [payment.Payment\nDomain Model] as PaymentDomain
-    
-    [instruments\nDomain Models] as InstrumentDomain
-    note right of InstrumentDomain
-        - Instrument
-        - AmountObject
-        - InstrumentObject
-        - CaptureObject
-    end note
+skinparam backgroundColor #FFFFFF
+skinparam package {
+    BackgroundColor<<Layer>> #E8F4F8
+    BorderColor<<Layer>> #4A90E2
+}
+skinparam component {
+    BackgroundColor #F5F5F5
+    BorderColor #333333
 }
 
-package "Adapter Layer - Akua" {
-    [akua.Client] as Client
+package "Domain Layer" <<Layer>> {
+    rectangle "Business Domain" as DomainGroup {
+        [authorization] as AuthDomain
+        [commerce] as CommerceDomain
+        [organization] as OrgDomain
+        [payment] as PaymentDomain
+        [instruments] as InstrumentDomain
+    }
+}
+
+package "Adapter Layer" <<Layer>> {
+    rectangle "Akua Adapters" as AdapterGroup {
+        [AuthorizationProvider] as AuthAdapter
+        [CommerceProvider] as CommerceAdapter
+        [OrganizationProvider] as OrgAdapter
+        [PaymentsProvider] as PaymentAdapter
+    }
+    
+    [akua.Client] as Client #FFE6CC
     note right of Client
-        - HTTP Client
-        - JWT Token Management
-        - OAuth Token Loading
-        - Configuration
-    end note
-    
-    [akua.authorization\nAuthorizationProvider] as AuthAdapter
-    note right of AuthAdapter
-        - Authorize()
-        - POST /v1/authorizations
-    end note
-    
-    [akua.commerce\nCommerceProvider] as CommerceAdapter
-    note right of CommerceAdapter
-        - GetOrganizationCommerces()
-        - CreateCommerce()
-        - GetCommerceById()
-        - DeleteCommerce()
-        - UpdateCommerce()
-        - UpdateCommerceRails()
-    end note
-    
-    [akua.organizations\nOrganizationProvider] as OrgAdapter
-    note right of OrgAdapter
-        - GetOrganizations()
-        - GET /v1/organizations
-    end note
-    
-    [akua.payments\nPaymentsProvider] as PaymentAdapter
-    note right of PaymentAdapter
-        - GetPayments()
-        - GET /v1/payments
-    end note
-    
-    [akua.errors] as Errors
-    note right of Errors
-        - ErrJWTTokenNotSet
+        **Shared Infrastructure**
+        • HTTP Client
+        • JWT Token Management
+        • OAuth Authentication
     end note
 }
 
-cloud "External System" {
-    [Akua API] as AkuaAPI
-    note right of AkuaAPI
-        REST API Endpoints:
-        - /oauth/token
-        - /v1/authorizations
-        - /v1/merchants
-        - /v1/organizations
-        - /v1/payments
-    end note
+cloud "Akua API" #E8F4F8 {
+    [REST API\n/v1/authorizations\n/v1/payments\n/v1/merchants\n/v1/organizations] as AkuaAPI
 }
 
-' Domain Relationships
-AuthService ..> AuthPort : uses
-AuthService ..> AuthDomain : returns
-CommerceService ..> CommercePort : uses
-CommerceService ..> CommerceDomain : returns
-OrgService ..> OrgPort : uses
-OrgService ..> OrgDomain : returns
-PaymentService ..> PaymentPort : uses
-PaymentService ..> PaymentDomain : returns
+' Domain to Adapter - Implementation
+AuthDomain ..|> AuthAdapter : implements
+CommerceDomain ..|> CommerceAdapter : implements
+OrgDomain ..|> OrgAdapter : implements
+PaymentDomain ..|> PaymentAdapter : implements
 
-' Adapter Implementations
-AuthAdapter ..|> AuthPort : implements
-CommerceAdapter ..|> CommercePort : implements
-OrgAdapter ..|> OrgPort : implements
-PaymentAdapter ..|> PaymentPort : implements
+' Shared dependencies
+InstrumentDomain ..> AuthAdapter : uses
+PaymentDomain ..> AuthAdapter : uses
 
-' Adapter Dependencies
-AuthAdapter --> Client : uses
-AuthAdapter --> Errors : uses
-AuthAdapter --> InstrumentDomain : uses
-CommerceAdapter --> Client : uses
-CommerceAdapter --> Errors : uses
-OrgAdapter --> Client : uses
-OrgAdapter --> Errors : uses
-PaymentAdapter --> Client : uses
-PaymentAdapter --> Errors : uses
+' Adapters use Client
+AuthAdapter --> Client
+CommerceAdapter --> Client
+OrgAdapter --> Client
+PaymentAdapter --> Client
 
-' Client to External API
-Client --> AkuaAPI : HTTP Requests\nJWT Token Management
-AuthAdapter --> AkuaAPI : POST /v1/authorizations
-CommerceAdapter --> AkuaAPI : GET/POST/PUT /v1/merchants
-OrgAdapter --> AkuaAPI : GET /v1/organizations
-PaymentAdapter --> AkuaAPI : GET /v1/payments
+' Client communicates with API
+Client --> AkuaAPI : HTTP + JWT\nAuthentication
 
-' Domain Model Dependencies
-AuthDomain --> InstrumentDomain : references
-AuthAdapter --> AuthDomain : converts to/from
-CommerceAdapter --> CommerceDomain : converts to/from
-OrgAdapter --> OrgDomain : converts to/from
-PaymentAdapter --> PaymentDomain : converts to/from
+' Adapters call API endpoints
+AuthAdapter ..> AkuaAPI : /v1/authorizations
+CommerceAdapter ..> AkuaAPI : /v1/merchants
+OrgAdapter ..> AkuaAPI : /v1/organizations
+PaymentAdapter ..> AkuaAPI : /v1/payments
 
 legend right
-    |= Layer |= Purpose |
-    | **Domain** | Business logic, interfaces, and domain models |
-    | **Service** | Orchestration layer wrapping providers |
-    | **Adapter** | External integration implementations |
-    | **Client** | HTTP communication and authentication |
-    | **External** | Akua API - Payment processing platform |
+    |= Symbol |= Meaning |
+    | **..|>** | Implements interface |
+    | **-->** | Uses/Dependency |
+    | **..>** | References/Uses |
 endlegend
 
 @enduml
